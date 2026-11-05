@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:entity",
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "horror_mod:glitch"
+        }
+      ],
+      "rolls": 1
+    }
+  ]
+}

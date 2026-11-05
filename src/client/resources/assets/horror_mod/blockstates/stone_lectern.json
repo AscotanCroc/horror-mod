@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,charged=false": {
+      "model": "horror_mod:block/stone_lectern"
+    },
+    "facing=east,charged=false": {
+      "model": "horror_mod:block/stone_lectern",
+      "y": 90
+    },
+    "facing=south,charged=false": {
+      "model": "horror_mod:block/stone_lectern",
+      "y": 180
+    },
+    "facing=west,charged=false": {
+      "model": "horror_mod:block/stone_lectern",
+      "y": 270
+    },
+    "facing=north,charged=true": {
+      "model": "horror_mod:block/stone_lectern"
+    },
+    "facing=east,charged=true": {
+      "model": "horror_mod:block/stone_lectern",
+      "y": 90
+    },
+    "facing=south,charged=true": {
+      "model": "horror_mod:block/stone_lectern",
+      "y": 180
+    },
+    "facing=west,charged=true": {
+      "model": "horror_mod:block/stone_lectern",
+      "y": 270
+    }
+  }
+}

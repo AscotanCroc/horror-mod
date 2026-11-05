@@ -1,0 +1,19 @@
+{
+  "block.horror_mod.sample_block": "Sample Block",
+  "block.horror_mod.stone_lectern": "Stone Lectern",
+  "entity.horror_mod.reverse_zombie": "Reverse Zombie",
+  "item.horror_mod.reverse_zombie_spawn_egg": "Reverse Zombie Spawn Egg",
+  "item.horror_mod.glitch": "rotten &&",
+  "item.horror_mod.error_icon": "java.lang.NullPointerException",
+  "entity.horror_mod.reverse_creeper": "Reverse Creeper",
+  "item.horror_mod.reverse_creeper_spawn_egg": "Reverse Creeper Spawn Egg",
+  "item.horror_mod.savior": "savior",
+  "item.horror_mod.veil": "[veil",
+  "entity.horror_mod.reverse_enderman": "Reverse Enderman",
+  "item.horror_mod.reverse_enderman_spawn_egg": "Reverse Enderman Spawn Egg",
+  "item.horror_mod.null_pointer": "java.lang.NullPointerException",
+  "entity.horror_mod.watdatmean": "the sihtf mouse",
+  "item.horror_mod.watdatmean_spawn_egg": "the sihtf mouse Spawn Egg",
+  "itemGroup.horror_mod.sample": "Sample",
+  "screen.horror_mod.stone_lectern": "Recipe"
+}

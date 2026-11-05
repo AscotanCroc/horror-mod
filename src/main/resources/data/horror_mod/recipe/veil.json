@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:bone",
+    "minecraft:iron_ingot",
+    "horror_mod:savior"
+  ],
+  "result": {
+    "count": 1,
+    "id": "horror_mod:veil"
+  }
+}

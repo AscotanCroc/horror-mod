@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:entity",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:killed_by_player"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "horror_mod:savior"
+        }
+      ],
+      "rolls": 1
+    },
+    {
+      "condition": {
+        "type": "minecraft:entity_properties",
+        "entity": "attacker",
+        "predicate": {
+          "minecraft:entity_type": "#minecraft:skeletons"
+        }
+      },
+      "entries": [
+        {
+          "type": "minecraft:tag",
+          "expand": true,
+          "items": "#minecraft:creeper_drop_music_discs"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "horror_mod:entities/reverse_creeper"
+}

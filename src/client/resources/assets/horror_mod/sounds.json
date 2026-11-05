@@ -1,0 +1,153 @@
+{
+  "ambience": {
+    "sounds": [
+      {
+        "name": "horror_mod:ambience",
+        "stream": true
+      }
+    ]
+  },
+  "night": {
+    "sounds": [
+      {
+        "name": "horror_mod:night",
+        "stream": true
+      }
+    ]
+  },
+  "reverse_zombie_ambient": {
+    "sounds": [
+      "horror_mod:mob/reverse_zombie/say1",
+      "horror_mod:mob/reverse_zombie/say2",
+      "horror_mod:mob/reverse_zombie/say3"
+    ]
+  },
+  "reverse_zombie_hurt": {
+    "sounds": [
+      "horror_mod:mob/reverse_zombie/hurt1",
+      "horror_mod:mob/reverse_zombie/hurt2"
+    ]
+  },
+  "reverse_zombie_death": {
+    "sounds": [
+      "horror_mod:mob/reverse_zombie/death"
+    ]
+  },
+  "reverse_zombie_step": {
+    "sounds": [
+      "horror_mod:mob/reverse_zombie/step1",
+      "horror_mod:mob/reverse_zombie/step2",
+      "horror_mod:mob/reverse_zombie/step3",
+      "horror_mod:mob/reverse_zombie/step4",
+      "horror_mod:mob/reverse_zombie/step5"
+    ]
+  },
+  "reverse_zombie_attack_door": {
+    "sounds": [
+      "horror_mod:mob/reverse_zombie/wood1",
+      "horror_mod:mob/reverse_zombie/wood2",
+      "horror_mod:mob/reverse_zombie/wood3",
+      "horror_mod:mob/reverse_zombie/wood4"
+    ]
+  },
+  "reverse_zombie_break_door": {
+    "sounds": [
+      "horror_mod:mob/reverse_zombie/woodbreak"
+    ]
+  },
+  "reverse_zombie_destroy_egg": {
+    "sounds": [
+      "horror_mod:mob/reverse_zombie/jump_egg1",
+      "horror_mod:mob/reverse_zombie/jump_egg2",
+      "horror_mod:mob/reverse_zombie/jump_egg3",
+      "horror_mod:mob/reverse_zombie/jump_egg4"
+    ]
+  },
+  "reverse_enderman_ambient": {
+    "sounds": [
+      "horror_mod:mob/reverse_enderman/idle1",
+      "horror_mod:mob/reverse_enderman/idle2",
+      "horror_mod:mob/reverse_enderman/idle3",
+      "horror_mod:mob/reverse_enderman/idle4",
+      "horror_mod:mob/reverse_enderman/idle5"
+    ]
+  },
+  "reverse_enderman_scream": {
+    "sounds": [
+      "horror_mod:mob/reverse_enderman/scream1",
+      "horror_mod:mob/reverse_enderman/scream2",
+      "horror_mod:mob/reverse_enderman/scream3",
+      "horror_mod:mob/reverse_enderman/scream4"
+    ]
+  },
+  "reverse_enderman_hurt": {
+    "sounds": [
+      "horror_mod:mob/reverse_enderman/hit1",
+      "horror_mod:mob/reverse_enderman/hit2",
+      "horror_mod:mob/reverse_enderman/hit3",
+      "horror_mod:mob/reverse_enderman/hit4"
+    ]
+  },
+  "reverse_enderman_death": {
+    "sounds": [
+      "horror_mod:mob/reverse_enderman/death"
+    ]
+  },
+  "reverse_enderman_stare": {
+    "sounds": [
+      "horror_mod:mob/reverse_enderman/stare"
+    ]
+  },
+  "reverse_enderman_teleport": {
+    "sounds": [
+      "horror_mod:mob/reverse_enderman/portal",
+      "horror_mod:mob/reverse_enderman/portal2"
+    ]
+  },
+  "reverse_creeper_primed": {
+    "sounds": [
+      "horror_mod:mob/reverse_creeper/fuse"
+    ],
+    "subtitle": "subtitles.entity.creeper.primed"
+  },
+  "reverse_creeper_explode": {
+    "sounds": [
+      "horror_mod:mob/reverse_creeper/explode1",
+      "horror_mod:mob/reverse_creeper/explode2",
+      "horror_mod:mob/reverse_creeper/explode3",
+      "horror_mod:mob/reverse_creeper/explode4"
+    ],
+    "subtitle": "subtitles.entity.generic.explode"
+  },
+  "reverse_creeper_hurt": {
+    "sounds": [
+      "horror_mod:mob/reverse_creeper/say1",
+      "horror_mod:mob/reverse_creeper/say2",
+      "horror_mod:mob/reverse_creeper/say3",
+      "horror_mod:mob/reverse_creeper/say4"
+    ]
+  },
+  "reverse_creeper_death": {
+    "sounds": [
+      "horror_mod:mob/reverse_creeper/death"
+    ]
+  },
+  "glitch_transition": {
+    "sounds": [
+      "horror_mod:glitch_transition"
+    ]
+  },
+  "whisper": {
+    "sounds": [
+      "horror_mod:whisper"
+    ]
+  },
+  "veil": {
+    "sounds": [
+      {
+        "name": "horror_mod:veil",
+        "stream": true
+      }
+    ]
+  }
+}

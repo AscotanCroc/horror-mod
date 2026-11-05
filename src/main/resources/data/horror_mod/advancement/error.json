@@ -1,0 +1,28 @@
+{
+  "parent": "minecraft:adventure/root",
+  "criteria": {
+    "seen": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "text": "Cannot invoke \"net.minecraft.world.entity.player.Player.tick()\" because \"this.player\" is null"
+    },
+    "hidden": true,
+    "icon": {
+      "id": "horror_mod:error_icon"
+    },
+    "show_toast": true,
+    "title": {
+      "text": "java.lang.NullPointerException"
+    }
+  },
+  "requirements": [
+    [
+      "seen"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

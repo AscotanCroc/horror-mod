@@ -1,0 +1,6 @@
+{
+  "type": "horror_mod:obelisk",
+  "biomes": "#horror_mod:has_obelisk",
+  "spawn_overrides": {},
+  "step": "surface_structures"
+}

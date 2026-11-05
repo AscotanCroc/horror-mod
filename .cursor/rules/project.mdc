@@ -1,0 +1,18 @@
+---
+description: Horror Mod architecture and boundaries
+alwaysApply: true
+---
+
+# Horror Mod
+
+Placeholder name. Mod id `horror_mod`, package `com.horrormod`, Minecraft 26.3, Fabric, Java 25, official Mojang mappings.
+
+Singleplayer-first total conversion. Shared identity and future world rules go in `src/main`. Rendering, menus, and shaders stay in `src/client`. Do not put client-only Minecraft classes in `src/main`.
+
+The look is a mod-owned post pipeline. Do not add Iris, Sodium, or another shader-pack loader. Do not override `assets/minecraft/shaders/core` unless a post pass cannot express the effect.
+
+`horror_mod:pipeline` is a passthrough chain and is not applied. When the look should always be on, add `assets/minecraft/post_effect/end_of_frame.json`. Leave that file absent until then.
+
+Sample content is `com.horrormod.content`: block `horror_mod:sample_block` and creative tab `horror_mod:sample`. Do not add a dimension, menu, entities, or other gameplay unless asked.
+
+New common mixins go in `com.horrormod.mixin` and `horror_mod.mixins.json`. New client mixins go in `com.horrormod.client.mixin` and `horror_mod.client.mixins.json`.

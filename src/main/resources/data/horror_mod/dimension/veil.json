@@ -1,0 +1,22 @@
+{
+  "type": "horror_mod:veil",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "minecraft:the_void",
+      "features": false,
+      "lakes": false,
+      "layers": [
+        {
+          "block": "minecraft:bedrock",
+          "height": 1
+        },
+        {
+          "block": "minecraft:blackstone",
+          "height": 1
+        }
+      ],
+      "structure_overrides": []
+    }
+  }
+}

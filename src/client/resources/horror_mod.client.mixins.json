@@ -1,0 +1,35 @@
+{
+  "required": true,
+  "package": "com.horrormod.client.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "CloudRendererMixin",
+    "SkyRendererMixin",
+    "MoodyLightmapMixin",
+    "MusicManagerMixin",
+    "SoundReloadMixin",
+    "EasyWorldMixin",
+    "LecternPostEffectMixin",
+    "LecternHudMixin",
+    "GlitchSlotMixin",
+    "HorrorHudMixin",
+    "KeyboardInputMixin",
+    "MouseLockMixin",
+    "KeybindLockMixin",
+    "ScreenLockMixin",
+    "SoundMuteMixin",
+    "VeilHeldItemMixin",
+    "VeilItemMixin",
+    "VeilLoadingMixin",
+    "RenderLayerAccessor",
+    "ReverseEndermanEyesMixin",
+    "ReverseEndermanCensorMixin",
+    "NullCloneRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}

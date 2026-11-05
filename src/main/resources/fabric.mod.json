@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "horror_mod",
+  "version": "${version}",
+  "name": "Horror Mod",
+  "description": "Placeholder total conversion. An abstract space with a mod-owned shader pipeline. The space is not built yet.",
+  "license": "All-Rights-Reserved",
+  "icon": "assets/horror_mod/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.horrormod.HorrorMod"
+    ],
+    "client": [
+      "com.horrormod.client.HorrorModClient"
+    ]
+  },
+  "mixins": [
+    "horror_mod.mixins.json",
+    {
+      "config": "horror_mod.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.20.1",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}

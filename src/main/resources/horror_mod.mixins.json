@@ -1,0 +1,48 @@
+{
+  "required": true,
+  "package": "com.horrormod.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "BabyZombieMixin",
+    "BlackoutKnockbackMixin",
+    "BlockPlaceMixin",
+    "ChestOpenMixin",
+    "CreeperExplodeMixin",
+    "ReverseCreeperSoundMixin",
+    "BatSpawnMixin",
+    "BeehiveDecoratorMixin",
+    "CaveBiomeMixin",
+    "DaylightSpawnMixin",
+    "DeepslateBlockMixin",
+    "DoorInteractGoalAccessor",
+    "DeepLavaMixin",
+    "DungeonFeatureMixin",
+    "GeodeFeatureMixin",
+    "GlowLichenMixin",
+    "LavaSpringMixin",
+    "MagmaLakeMixin",
+    "PhantomSpawnerMixin",
+    "ReverseEndermanParticleMixin",
+    "ReverseEndermanSoundMixin",
+    "ReverseZombieDoorMixin",
+    "ReverseZombieEggMixin",
+    "SpawnPlacementsInvoker",
+    "UndergroundSpawnMixin",
+    "SpawnPlainsBiomeMixin",
+    "SpawnPlainsLavaMixin",
+    "SpawnPlainsLifeMixin",
+    "SpawnPlainsMobGenMixin",
+    "SpawnPlainsStructureMixin",
+    "VoidChunkWriteMixin",
+    "VoidTerrainMixin",
+    "VoidDecorationMixin",
+    "WrongStepMixin",
+    "ZombiePackMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}

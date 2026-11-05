@@ -1,0 +1,20 @@
+---
+description: Minecraft 26.3 post-shader authoring
+globs: "**/{shaders,post_effect}/**"
+alwaysApply: false
+---
+
+# Shaders
+
+26.3 passes set `vertex_shader` and `fragment_shader`. Fullscreen passes use `minecraft:core/screenquad`. The 26.4 rename to `screentriangle` does not apply here.
+
+The first two lines of a shader, with nothing before them:
+
+```
+#version 330
+#extension GL_ARB_separate_shader_objects : require
+```
+
+Every `in` and `out` needs `layout(location = N)`. Includes use `#include <horror_mod:horror.glsl>`, which loads `assets/horror_mod/shaders/include/horror.glsl`. Guard includes with `#ifndef`. Do not use `#moj_import`.
+
+Uniform blocks are `std140` and must be supplied by the post-effect JSON under the same block name. A pass cannot read and write `minecraft:main`. Write `swap`, then blit back to `minecraft:main`.
