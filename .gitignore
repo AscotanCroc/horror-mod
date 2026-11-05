@@ -33,3 +33,7 @@ replay_*.log
 # os
 .DS_Store
 Thumbs.db
+
+# local dev mods and a stray Fabric mixin file
+libs/
+fabric-biome-api-v1.mixins.json
