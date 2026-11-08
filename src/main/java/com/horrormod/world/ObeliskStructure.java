@@ -40,8 +40,9 @@ public class ObeliskStructure extends Structure {
         int originZ = nominal.getMiddleBlockZ();
         BlockPos best = null;
         int bestScore = Integer.MAX_VALUE;
-        for (int dx = -32; dx <= 32; dx += 8) {
-            for (int dz = -32; dz <= 32; dz += 8) {
+        int search = ObeliskPlacement.SITE_SEARCH_RADIUS;
+        for (int dx = -search; dx <= search; dx += 8) {
+            for (int dz = -search; dz <= search; dz += 8) {
                 int x = originX + dx;
                 int z = originZ + dz;
                 int chunkX = Math.floorDiv(x, 16);
@@ -49,7 +50,7 @@ public class ObeliskStructure extends Structure {
                 if (!withinSpawn(spawn, x, z) || SpawnPlains.isSpawnPad(spawn, chunkX, chunkZ)) {
                     continue;
                 }
-                if (VoidChunks.isBaseVoid(context.seed(), chunkX, chunkZ)) {
+                if (!footprintClear(context.seed(), x, z)) {
                     continue;
                 }
                 int surface = column(context, x, z, Heightmap.Types.WORLD_SURFACE_WG);
@@ -100,6 +101,23 @@ public class ObeliskStructure extends Structure {
             score += (surface - 1 - outside) * 6;
         }
         return score;
+    }
+
+    /** The whole 9-wide course, not only the center column. */
+    private static boolean footprintClear(long seed, int x, int z) {
+        int radius = ObeliskPiece.HALF_WIDTH;
+        int minX = Math.floorDiv(x - radius, 16);
+        int maxX = Math.floorDiv(x + radius, 16);
+        int minZ = Math.floorDiv(z - radius, 16);
+        int maxZ = Math.floorDiv(z + radius, 16);
+        for (int chunkX = minX; chunkX <= maxX; chunkX++) {
+            for (int chunkZ = minZ; chunkZ <= maxZ; chunkZ++) {
+                if (VoidChunks.isBaseVoid(seed, chunkX, chunkZ)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private static int column(GenerationContext context, int x, int z, Heightmap.Types type) {

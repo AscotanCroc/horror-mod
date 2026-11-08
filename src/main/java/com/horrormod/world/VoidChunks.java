@@ -45,7 +45,7 @@ public final class VoidChunks {
         if (SpawnPlains.isSpawnPad(spawn, chunkX, chunkZ)) {
             return false;
         }
-        return !ObeliskPlacement.isObeliskChunk(seed, spawn, chunkX, chunkZ);
+        return !ObeliskPlacement.preservesChunk(seed, spawn, chunkX, chunkZ);
     }
 
     public static void clear(ServerLevel level, LevelChunk chunk, boolean generated) {

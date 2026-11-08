@@ -8,6 +8,8 @@ import net.minecraft.world.level.ChunkPos;
  */
 public final class ObeliskPlacement {
     public static final int MAX_DISTANCE_FROM_SPAWN = 100;
+    /** How far a site may sit from the nominal chunk center. Matches the structure search. */
+    public static final int SITE_SEARCH_RADIUS = 32;
 
     private static final long SALT = 0x4F42454C4C49534BL;
     private static final int MIN_DISTANCE = 48;
@@ -36,9 +38,14 @@ public final class ObeliskPlacement {
         }
     }
 
-    public static boolean isObeliskChunk(long seed, ChunkPos spawn, int chunkX, int chunkZ) {
+    /**
+     * Chunks the pillar can occupy. The site may sit {@link #SITE_SEARCH_RADIUS} blocks from the
+     * nominal chunk center, and the cobble extends {@link ObeliskPiece#HALF_WIDTH} past that.
+     */
+    public static boolean preservesChunk(long seed, ChunkPos spawn, int chunkX, int chunkZ) {
         ChunkPos obelisk = chunk(seed, spawn);
-        return obelisk.x() == chunkX && obelisk.z() == chunkZ;
+        int reach = Math.floorDiv(8 + SITE_SEARCH_RADIUS + ObeliskPiece.HALF_WIDTH, 16);
+        return Math.abs(chunkX - obelisk.x()) <= reach && Math.abs(chunkZ - obelisk.z()) <= reach;
     }
 
     private static ChunkPos compute(long seed, ChunkPos spawn) {

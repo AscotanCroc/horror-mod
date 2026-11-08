@@ -172,16 +172,21 @@ public final class HorrorEventScheduler {
         }
         if (candidates.isEmpty()) {
             if (exclude != null && !memory.isUsed(exclude)) {
-                memory.setPending(exclude, now);
+                waitFor(player, memory, exclude, now);
             }
             return;
         }
         HorrorEvent event = candidates.get(level.getRandom().nextInt(candidates.size()));
         if (!HorrorEventActions.perform(level, player, memory, event)) {
-            memory.setPending(event, now);
+            waitFor(player, memory, event, now);
             return;
         }
         finish(level, player, memory, event, now);
+    }
+
+    private static void waitFor(ServerPlayer player, PlayerMemory memory, HorrorEvent event, long now) {
+        memory.setPending(event, now);
+        HorrorMod.LOGGER.info("Started waiting for horror event {} for {}", event.id(), player.getName().getString());
     }
 
     private static void finish(ServerLevel level, ServerPlayer player, PlayerMemory memory, HorrorEvent event, long now) {

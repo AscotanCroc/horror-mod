@@ -33,7 +33,6 @@ public enum HorrorEvent {
     GHOST_MINE("ghost_mine"),
     CAVE_BREATH("cave_breath"),
     CHEST_LID("chest_lid"),
-    OFFHAND_TRADE("offhand_trade"),
     WRONG_STEP("wrong_step");
 
     private final String id;

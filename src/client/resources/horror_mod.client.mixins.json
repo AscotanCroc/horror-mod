@@ -20,8 +20,10 @@
     "SoundMuteMixin",
     "VeilHeldItemMixin",
     "VeilItemMixin",
+    "GlitchPitchMixin",
     "VeilLoadingMixin",
     "RenderLayerAccessor",
+    "ReverseSpiderCutMixin",
     "ReverseEndermanEyesMixin",
     "ReverseEndermanCensorMixin",
     "NullCloneRendererMixin"

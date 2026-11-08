@@ -22,7 +22,7 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSeriali
  * A hollow cobblestone pillar with a floor, a spawn-facing oak door, and a lectern.
  */
 public class ObeliskPiece extends StructurePiece {
-    private static final int HALF_WIDTH = 4;
+    static final int HALF_WIDTH = 4;
     private static final int BURIED = 4;
     private static final int HEIGHT = 48;
     private static final int EXTRA_FOUNDATION = 12;

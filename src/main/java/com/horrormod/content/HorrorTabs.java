@@ -30,6 +30,9 @@ public final class HorrorTabs {
                         output.accept(HorrorEntities.GLITCH);
                         output.accept(HorrorEntities.REVERSE_ENDERMAN_SPAWN_EGG);
                         output.accept(HorrorEntities.REVERSE_CREEPER_SPAWN_EGG);
+                        output.accept(HorrorEntities.REVERSE_SKELETON_SPAWN_EGG);
+                        output.accept(HorrorEntities.REVERSE_SPIDER_SPAWN_EGG);
+                        output.accept(HorrorBlocks.BLACK_COBWEB);
                         output.accept(HorrorEntities.SAVIOR);
                         output.accept(HorrorEntities.VEIL);
                         output.accept(HorrorEntities.NULL_POINTER);

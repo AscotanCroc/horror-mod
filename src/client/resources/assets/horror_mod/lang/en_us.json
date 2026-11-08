@@ -14,6 +14,12 @@
   "item.horror_mod.null_pointer": "java.lang.NullPointerException",
   "entity.horror_mod.watdatmean": "the sihtf mouse",
   "item.horror_mod.watdatmean_spawn_egg": "the sihtf mouse Spawn Egg",
+  "entity.horror_mod.reverse_skeleton": "Reverse Skeleton",
+  "item.horror_mod.reverse_skeleton_spawn_egg": "Reverse Skeleton Spawn Egg",
+  "entity.horror_mod.reverse_spider": "Reverse Spider",
+  "item.horror_mod.reverse_spider_spawn_egg": "Reverse Spider Spawn Egg",
+  "block.horror_mod.black_cobweb": "Black Cobweb",
+  "death.attack.passed_away": "%1$s passed away",
   "itemGroup.horror_mod.sample": "Sample",
   "screen.horror_mod.stone_lectern": "Recipe"
 }

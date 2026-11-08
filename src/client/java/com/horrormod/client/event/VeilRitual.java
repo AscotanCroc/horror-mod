@@ -14,12 +14,13 @@ import net.minecraft.resources.Identifier;
 
 /**
  * Black screen over the trip into the veil, including the loading screen.
- * The face is {@code assets/horror_mod/textures/gui/veil_face.png}, 512 by 512.
+ * The picture is {@code assets/horror_mod/textures/gui/veil_face.png}.
  * Its opacity eases from nothing up to {@link #PEAK_ALPHA}, holds, then the picture cuts.
  */
 public final class VeilRitual {
     public static final Identifier FACE = HorrorMod.id("textures/gui/veil_face.png");
-    public static final int FACE_SIZE = 512;
+    public static final int FACE_WIDTH = 768;
+    public static final int FACE_HEIGHT = 1024;
     /** About 22% opacity. This is as bright as the face is allowed to get. */
     public static final int PEAK_ALPHA = 56;
     private static final long REVEAL_NANOS = 8_000_000_000L;
@@ -45,11 +46,13 @@ public final class VeilRitual {
         }
         running = true;
         startedAt = System.nanoTime();
+        hideCursor();
         silence();
         Minecraft minecraft = Minecraft.getInstance();
         if (!(minecraft.gui.screen() instanceof LevelLoadingScreen)) {
             minecraft.gui.setScreen(null);
         }
+        hideCursor();
     }
 
     public static boolean active() {
@@ -71,6 +74,7 @@ public final class VeilRitual {
             return;
         }
         if (active()) {
+            hideCursor();
             silence();
             return;
         }
@@ -91,9 +95,11 @@ public final class VeilRitual {
         if (alpha <= 0) {
             return;
         }
-        int size = Math.max(1, Math.round(Math.min(width, height) * 0.72F));
-        int x = (width - size) / 2;
-        int y = (height - size) / 2;
+        int max = Math.max(1, Math.round(Math.min(width, height) * 0.72F));
+        int drawHeight = max;
+        int drawWidth = Math.max(1, Math.round(max * (FACE_WIDTH / (float) FACE_HEIGHT)));
+        int x = (width - drawWidth) / 2;
+        int y = (height - drawHeight) / 2;
         graphics.blit(
                 RenderPipelines.GUI_TEXTURED,
                 FACE,
@@ -101,10 +107,10 @@ public final class VeilRitual {
                 y,
                 0.0F,
                 0.0F,
-                size,
-                size,
-                FACE_SIZE,
-                FACE_SIZE,
+                drawWidth,
+                drawHeight,
+                FACE_WIDTH,
+                FACE_HEIGHT,
                 (alpha << 24) | 0xFFFFFF
         );
     }
@@ -124,6 +130,13 @@ public final class VeilRitual {
         return minecraft.level != null
                 && !(minecraft.gui.screen() instanceof LevelLoadingScreen)
                 && HorrorDimensions.VEIL.equals(minecraft.level.dimension());
+    }
+
+    private static void hideCursor() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (!minecraft.mouseHandler.isMouseGrabbed()) {
+            minecraft.mouseHandler.grabMouse();
+        }
     }
 
     private static void silence() {

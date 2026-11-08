@@ -19,6 +19,8 @@ import com.horrormod.content.NullPointerItem;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Enderman;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.monster.skeleton.Skeleton;
+import net.minecraft.world.entity.monster.spider.Spider;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -208,6 +210,74 @@ public final class HorrorEntities {
             new SpawnEggItem(new Item.Properties().setId(WATDATMEAN_SPAWN_EGG_KEY).spawnEgg(WATDATMEAN))
     );
 
+    public static final ResourceKey<EntityType<?>> REVERSE_SKELETON_KEY = ResourceKey.create(
+            Registries.ENTITY_TYPE,
+            HorrorMod.id("reverse_skeleton")
+    );
+    public static final ResourceKey<Item> REVERSE_SKELETON_SPAWN_EGG_KEY = ResourceKey.create(
+            Registries.ITEM,
+            HorrorMod.id("reverse_skeleton_spawn_egg")
+    );
+
+    public static final EntityType<ReverseSkeleton> REVERSE_SKELETON = Registry.register(
+            BuiltInRegistries.ENTITY_TYPE,
+            REVERSE_SKELETON_KEY,
+            EntityType.Builder.of(ReverseSkeleton::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.99F)
+                    .eyeHeight(1.74F)
+                    .ridingOffset(-0.7F)
+                    .clientTrackingRange(8)
+                    .notInPeaceful()
+                    .build(REVERSE_SKELETON_KEY)
+    );
+
+    public static final Item REVERSE_SKELETON_SPAWN_EGG = Registry.register(
+            BuiltInRegistries.ITEM,
+            REVERSE_SKELETON_SPAWN_EGG_KEY,
+            new SpawnEggItem(new Item.Properties().setId(REVERSE_SKELETON_SPAWN_EGG_KEY).spawnEgg(REVERSE_SKELETON))
+    );
+
+    public static final ResourceKey<EntityType<?>> REVERSE_SPIDER_KEY = ResourceKey.create(
+            Registries.ENTITY_TYPE,
+            HorrorMod.id("reverse_spider")
+    );
+    public static final ResourceKey<Item> REVERSE_SPIDER_SPAWN_EGG_KEY = ResourceKey.create(
+            Registries.ITEM,
+            HorrorMod.id("reverse_spider_spawn_egg")
+    );
+
+    public static final EntityType<ReverseSpider> REVERSE_SPIDER = Registry.register(
+            BuiltInRegistries.ENTITY_TYPE,
+            REVERSE_SPIDER_KEY,
+            EntityType.Builder.of(ReverseSpider::new, MobCategory.MONSTER)
+                    .sized(1.4F, 0.9F)
+                    .eyeHeight(0.65F)
+                    .clientTrackingRange(8)
+                    .notInPeaceful()
+                    .build(REVERSE_SPIDER_KEY)
+    );
+
+    public static final Item REVERSE_SPIDER_SPAWN_EGG = Registry.register(
+            BuiltInRegistries.ITEM,
+            REVERSE_SPIDER_SPAWN_EGG_KEY,
+            new SpawnEggItem(new Item.Properties().setId(REVERSE_SPIDER_SPAWN_EGG_KEY).spawnEgg(REVERSE_SPIDER))
+    );
+
+    public static final ResourceKey<EntityType<?>> GLITCH_SQUARE_KEY = ResourceKey.create(
+            Registries.ENTITY_TYPE,
+            HorrorMod.id("glitch_square")
+    );
+
+    public static final EntityType<GlitchSquare> GLITCH_SQUARE = Registry.register(
+            BuiltInRegistries.ENTITY_TYPE,
+            GLITCH_SQUARE_KEY,
+            EntityType.Builder.<GlitchSquare>of(GlitchSquare::new, MobCategory.MISC)
+                    .sized(0.3F, 0.3F)
+                    .clientTrackingRange(8)
+                    .updateInterval(1)
+                    .build(GLITCH_SQUARE_KEY)
+    );
+
     private HorrorEntities() {
     }
 
@@ -216,7 +286,7 @@ public final class HorrorEntities {
      * Add future reverse monsters here.
      */
     public static List<EntityType<? extends Mob>> reverseMonsters() {
-        return List.of(REVERSE_ZOMBIE, REVERSE_ENDERMAN, REVERSE_CREEPER);
+        return List.of(REVERSE_ZOMBIE, REVERSE_ENDERMAN, REVERSE_CREEPER, REVERSE_SKELETON, REVERSE_SPIDER);
     }
 
     public static boolean isReverse(Entity entity) {
@@ -250,11 +320,30 @@ public final class HorrorEntities {
         ReverseCreeperBlackout.initialize();
         ReverseCreeperBurst.initialize();
         ReverseZombieNights.initialize();
+        ReverseMobLifetime.initialize();
         FabricDefaultAttributeRegistry.register(REVERSE_ENDERMAN, Enderman.createAttributes());
         FabricDefaultAttributeRegistry.register(NULL_CLONE, Player.createAttributes());
         FabricDefaultAttributeRegistry.register(WATDATMEAN, Watdatmean.createAttributes());
+        FabricDefaultAttributeRegistry.register(REVERSE_SKELETON, Skeleton.createAttributes());
+        SpawnPlacementsInvoker.horror$register(
+                REVERSE_SKELETON,
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                ReverseSkeleton::checkNaturalSpawn
+        );
+        BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(), MobCategory.MONSTER, REVERSE_SKELETON, ReverseMonsterSpawns.WEIGHT, 1, 1);
+        FabricDefaultAttributeRegistry.register(REVERSE_SPIDER, Spider.createAttributes());
+        SpawnPlacementsInvoker.horror$register(
+                REVERSE_SPIDER,
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                ReverseSpider::checkNaturalSpawn
+        );
+        BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(), MobCategory.MONSTER, REVERSE_SPIDER, ReverseMonsterSpawns.WEIGHT, 1, 1);
         HorrorMod.LOGGER.info("Registered reverse zombie {}", REVERSE_ZOMBIE_KEY);
         HorrorMod.LOGGER.info("Registered reverse enderman {}", REVERSE_ENDERMAN_KEY);
         HorrorMod.LOGGER.info("Registered reverse creeper {}", REVERSE_CREEPER_KEY);
+        HorrorMod.LOGGER.info("Registered reverse skeleton {}", REVERSE_SKELETON_KEY);
+        HorrorMod.LOGGER.info("Registered reverse spider {}", REVERSE_SPIDER_KEY);
     }
 }

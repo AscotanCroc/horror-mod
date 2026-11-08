@@ -12,6 +12,18 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class WrongStepMixin {
     @Redirect(
             method = "playStepSound(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/SoundType;getVolume()F")
+    )
+    private float horror$wrongVolume(SoundType type) {
+        float volume = type.getVolume();
+        if ((Object) this instanceof Player player) {
+            return HorrorEventActions.adjustStepVolume(player, volume);
+        }
+        return volume;
+    }
+
+    @Redirect(
+            method = "playStepSound(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/SoundType;getPitch()F")
     )
     private float horror$wrongPitch(SoundType type) {

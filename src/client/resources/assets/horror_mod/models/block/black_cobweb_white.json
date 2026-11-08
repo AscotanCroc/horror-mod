@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "horror_mod:block/black_cobweb_white"
+  }
+}

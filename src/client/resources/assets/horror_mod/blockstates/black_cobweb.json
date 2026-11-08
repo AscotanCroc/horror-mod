@@ -1,0 +1,25 @@
+{
+  "multipart": [
+    { "when": { "age": "0" }, "apply": { "model": "horror_mod:block/black_cobweb_white" } },
+    { "when": { "age": "1" }, "apply": { "model": "horror_mod:block/black_cobweb" } },
+    { "when": { "age": "2" }, "apply": { "model": "horror_mod:block/black_cobweb_white" } },
+    { "when": { "age": "3" }, "apply": { "model": "horror_mod:block/black_cobweb" } },
+    { "when": { "age": "4" }, "apply": { "model": "horror_mod:block/black_cobweb_white" } },
+    { "when": { "age": "5" }, "apply": { "model": "horror_mod:block/black_cobweb" } },
+    { "when": { "age": "6" }, "apply": { "model": "horror_mod:block/black_cobweb_white" } },
+    { "when": { "age": "7" }, "apply": { "model": "horror_mod:block/black_cobweb" } },
+    { "when": { "age": "8" }, "apply": { "model": "horror_mod:block/black_cobweb_white" } },
+    { "when": { "age": "9" }, "apply": { "model": "horror_mod:block/black_cobweb" } },
+    { "when": { "age": "10" }, "apply": { "model": "horror_mod:block/black_cobweb_white" } },
+    { "when": { "age": "11" }, "apply": { "model": "horror_mod:block/black_cobweb" } },
+    { "when": { "age": "12" }, "apply": { "model": "horror_mod:block/black_cobweb_white" } },
+    { "when": { "age": "13" }, "apply": { "model": "horror_mod:block/black_cobweb" } },
+    { "when": { "age": "14" }, "apply": { "model": "horror_mod:block/black_cobweb_white" } },
+    { "when": { "age": "15" }, "apply": { "model": "horror_mod:block/black_cobweb" } },
+    { "when": { "age": "16" }, "apply": { "model": "horror_mod:block/black_cobweb_white" } },
+    { "when": { "age": "17" }, "apply": { "model": "horror_mod:block/black_cobweb" } },
+    { "when": { "age": "18" }, "apply": { "model": "horror_mod:block/black_cobweb_white" } },
+    { "when": { "age": "19" }, "apply": { "model": "horror_mod:block/black_cobweb" } },
+    { "when": { "age": "20" }, "apply": { "model": "horror_mod:block/black_cobweb" } }
+  ]
+}

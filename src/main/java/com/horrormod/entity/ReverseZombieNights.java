@@ -24,9 +24,14 @@ import net.minecraft.world.level.levelgen.Heightmap;
  * Ordinary monster spawns rarely reach the surface, because cave mobs fill the cap first.
  */
 public final class ReverseZombieNights {
-    private static final int NIGHT_START = 13000;
-    private static final int NIGHT_END = 23000;
     private static final int ATTEMPTS = 12;
+    /** Clear nights stay a coin flip. A thunderstorm nudges that to three in five. */
+    private static final float STORM_NIGHT_CHANCE = 0.6F;
+    /**
+     * Applied once, only if the night was already skipped, so a storm that arrives later
+     * lands on the same three-in-five chance instead of stacking a second roll.
+     */
+    private static final float STORM_CATCHUP = 0.2F;
     private final Map<UUID, NightProgress> spawnedNight = new HashMap<>();
 
     private ReverseZombieNights() {
@@ -47,12 +52,11 @@ public final class ReverseZombieNights {
         if (!level.getGameRules().get(GameRules.SPAWN_MOBS) || !level.getGameRules().get(GameRules.SPAWN_MONSTERS)) {
             return;
         }
-        long time = level.getOverworldClockTime();
-        int dayTime = Math.floorMod((int) time, 24000);
-        if (dayTime < NIGHT_START || dayTime >= NIGHT_END) {
+        if (!ReverseMonsterSpawns.surfaceNight(level)) {
             return;
         }
-        long nightId = Math.floorDiv(time - NIGHT_START, 24000L);
+        long time = level.getOverworldClockTime();
+        long nightId = Math.floorDiv(time - ReverseMonsterSpawns.SURFACE_NIGHT_START, 24000L);
         for (ServerPlayer player : level.players()) {
             if (player.isSpectator() || !onSurface(level, player)) {
                 continue;
@@ -61,10 +65,16 @@ public final class ReverseZombieNights {
             if (progress.nightId != nightId) {
                 progress.nightId = nightId;
                 progress.spawned = false;
-                progress.spawnTonight = level.getRandom().nextBoolean();
-                progress.kind = level.getRandom().nextInt(3);
+                progress.stormCounted = ReverseMonsterSpawns.storming(level);
+                float chance = progress.stormCounted ? STORM_NIGHT_CHANCE : 0.5F;
+                progress.spawnTonight = level.getRandom().nextFloat() < chance;
+                progress.kind = level.getRandom().nextInt(NightKind.values().length);
             }
-            if (!progress.spawnTonight || progress.spawned) {
+            if (!progress.spawnTonight && !progress.stormCounted && ReverseMonsterSpawns.storming(level)) {
+                progress.stormCounted = true;
+                progress.spawnTonight = level.getRandom().nextFloat() < STORM_CATCHUP;
+            }
+            if (!progress.spawnTonight || progress.spawned || ReverseMonsterSpawns.surfaceOccupied(level)) {
                 continue;
             }
             NightKind kind = NightKind.values()[progress.kind];
@@ -147,7 +157,9 @@ public final class ReverseZombieNights {
     private enum NightKind {
         ZOMBIE(HorrorEntities.REVERSE_ZOMBIE, ReverseZombie.class, 2),
         ENDERMAN(HorrorEntities.REVERSE_ENDERMAN, ReverseEnderman.class, 3),
-        CREEPER(HorrorEntities.REVERSE_CREEPER, ReverseCreeper.class, 2);
+        CREEPER(HorrorEntities.REVERSE_CREEPER, ReverseCreeper.class, 2),
+        SKELETON(HorrorEntities.REVERSE_SKELETON, ReverseSkeleton.class, 2),
+        SPIDER(HorrorEntities.REVERSE_SPIDER, ReverseSpider.class, 1);
 
         private final EntityType<?> type;
         private final Class<? extends Entity> entityClass;
@@ -164,6 +176,7 @@ public final class ReverseZombieNights {
         private long nightId = Long.MIN_VALUE;
         private boolean spawnTonight;
         private boolean spawned;
+        private boolean stormCounted;
         private int kind;
     }
 }

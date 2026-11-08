@@ -142,6 +142,93 @@
       "horror_mod:whisper"
     ]
   },
+  "reverse_skeleton_ambient": {
+    "sounds": [
+      "horror_mod:mob/reverse_skeleton/say1",
+      "horror_mod:mob/reverse_skeleton/say2",
+      "horror_mod:mob/reverse_skeleton/say3"
+    ]
+  },
+  "reverse_skeleton_hurt": {
+    "sounds": [
+      "horror_mod:mob/reverse_skeleton/hurt1",
+      "horror_mod:mob/reverse_skeleton/hurt2",
+      "horror_mod:mob/reverse_skeleton/hurt3",
+      "horror_mod:mob/reverse_skeleton/hurt4"
+    ]
+  },
+  "reverse_skeleton_death": {
+    "sounds": [
+      "horror_mod:mob/reverse_skeleton/death"
+    ]
+  },
+  "reverse_skeleton_step": {
+    "sounds": [
+      "horror_mod:mob/reverse_skeleton/step1",
+      "horror_mod:mob/reverse_skeleton/step2",
+      "horror_mod:mob/reverse_skeleton/step3",
+      "horror_mod:mob/reverse_skeleton/step4"
+    ]
+  },
+  "reverse_skeleton_shoot": {
+    "sounds": [
+      "horror_mod:mob/reverse_skeleton/bow"
+    ]
+  },
+  "reverse_spider_ambient": {
+    "sounds": [
+      "horror_mod:mob/reverse_spider/say1",
+      "horror_mod:mob/reverse_spider/say2",
+      "horror_mod:mob/reverse_spider/say3",
+      "horror_mod:mob/reverse_spider/say4"
+    ]
+  },
+  "reverse_spider_hurt": {
+    "sounds": [
+      "horror_mod:mob/reverse_spider/say1",
+      "horror_mod:mob/reverse_spider/say2",
+      "horror_mod:mob/reverse_spider/say3",
+      "horror_mod:mob/reverse_spider/say4"
+    ]
+  },
+  "reverse_spider_death": {
+    "sounds": [
+      "horror_mod:mob/reverse_spider/death"
+    ]
+  },
+  "reverse_spider_step": {
+    "sounds": [
+      "horror_mod:mob/reverse_spider/step1",
+      "horror_mod:mob/reverse_spider/step2",
+      "horror_mod:mob/reverse_spider/step3",
+      "horror_mod:mob/reverse_spider/step4"
+    ]
+  },
+  "reverse_spider_kill": {
+    "sounds": [
+      "horror_mod:mob/reverse_spider/kill"
+    ]
+  },
+  "black_cobweb_break": {
+    "sounds": [
+      "horror_mod:block/black_cobweb/break1",
+      "horror_mod:block/black_cobweb/break2",
+      "horror_mod:block/black_cobweb/break3",
+      "horror_mod:block/black_cobweb/break4",
+      "horror_mod:block/black_cobweb/break5",
+      "horror_mod:block/black_cobweb/break6"
+    ]
+  },
+  "black_cobweb_step": {
+    "sounds": [
+      "horror_mod:block/black_cobweb/step1",
+      "horror_mod:block/black_cobweb/step2",
+      "horror_mod:block/black_cobweb/step3",
+      "horror_mod:block/black_cobweb/step4",
+      "horror_mod:block/black_cobweb/step5",
+      "horror_mod:block/black_cobweb/step6"
+    ]
+  },
   "veil": {
     "sounds": [
       {

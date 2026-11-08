@@ -33,7 +33,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
@@ -85,6 +84,10 @@ public final class HorrorEventActions {
     private static final int GHOST_TICKS = 20;
     private static final int BREAK_WINDOW = 20 * 20;
     private static final int WRONG_STEPS = 4;
+    private static final float WRONG_STEP_VOLUME = 3.0F;
+    private static final int GRASS_RADIUS = 3;
+    private static final int TORCH_VANISH_MAX = 15;
+    private static final double CHEST_REACH = 15.0 * 15.0;
     private static final double NEAR_PLAYER = 24.0 * 24.0;
     private static final Map<UUID, RecentBreak> BROKEN = new ConcurrentHashMap<>();
     private static final Map<UUID, GhostBlock> GHOSTS = new ConcurrentHashMap<>();
@@ -123,9 +126,47 @@ public final class HorrorEventActions {
             case GHOST_MINE -> ghostMine(level, player);
             case CAVE_BREATH -> caveBreath(level, player);
             case CHEST_LID -> chestLid(level, player);
-            case OFFHAND_TRADE -> offhandTrade(player, memory);
             case WRONG_STEP -> wrongStep(player);
         };
+    }
+
+    /**
+     * Plays flicker for every player who can see {@code subject}. Counts as the one-shot flicker event.
+     */
+    public static void flickerIfSeen(ServerLevel level, Entity subject) {
+        Vec3 point = subject.getEyePosition();
+        for (ServerPlayer player : level.players()) {
+            if (!onScreen(player, point)) {
+                continue;
+            }
+            PlayerMemory memory = HorrorMemory.get(level).player(player.getUUID());
+            if (HorrorEvent.FLICKER.id().equals(memory.pendingId())) {
+                memory.setPending(null, 0L);
+            }
+            memory.markUsed(HorrorEvent.FLICKER);
+            show(level, player, memory, HorrorEvent.FLICKER, FLICKER_TICKS, 0.0F, 0.0F, 1.0F, 1.0F);
+        }
+    }
+
+    /** True when the point is inside a normal view and not behind a block. */
+    public static boolean onScreen(ServerPlayer player, Vec3 target) {
+        if (player.isSpectator()) {
+            return false;
+        }
+        Vec3 eye = player.getEyePosition();
+        Vec3 delta = target.subtract(eye);
+        double distance = delta.length();
+        if (distance > 96.0) {
+            return false;
+        }
+        if (distance < 1.0E-4) {
+            return true;
+        }
+        if (player.getLookAngle().dot(delta.scale(1.0 / distance)) < Math.cos(Math.toRadians(50.0))) {
+            return false;
+        }
+        BlockHitResult hit = player.level().clip(new ClipContext(eye, target, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+        return hit.getType() == HitResult.Type.MISS || hit.getLocation().distanceToSqr(target) <= 2.25;
     }
 
     public static void syncEffect(ServerPlayer player, PlayerMemory memory) {
@@ -254,12 +295,17 @@ public final class HorrorEventActions {
     }
 
     private static boolean torchVanish(ServerLevel level, ServerPlayer player, PlayerMemory memory) {
-        BlockPos pos = pickTorch(level, player, memory);
-        if (pos == null) {
+        List<BlockPos> ready = unwatchedTorches(level, player, memory);
+        if (ready.isEmpty()) {
             return false;
         }
-        level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-        forgetTorch(memory, pos, null);
+        shuffle(ready, level.getRandom());
+        int count = 1 + level.getRandom().nextInt(Math.min(TORCH_VANISH_MAX, ready.size()));
+        for (int index = 0; index < count; index++) {
+            BlockPos pos = ready.get(index);
+            level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            forgetTorch(memory, pos, null);
+        }
         return true;
     }
 
@@ -492,6 +538,15 @@ public final class HorrorEventActions {
     }
 
     private static BlockPos pickTorch(ServerLevel level, ServerPlayer player, PlayerMemory memory) {
+        List<BlockPos> ready = unwatchedTorches(level, player, memory);
+        if (ready.isEmpty()) {
+            return null;
+        }
+        return ready.get(level.getRandom().nextInt(ready.size()));
+    }
+
+    /** Placed torches that are still torches and are outside the player's view. */
+    private static List<BlockPos> unwatchedTorches(ServerLevel level, ServerPlayer player, PlayerMemory memory) {
         List<BlockPos> torches = memory.torches();
         boolean removed = torches.removeIf(pos -> level.isLoaded(pos) && !isTorch(level.getBlockState(pos)));
         if (removed) {
@@ -503,10 +558,7 @@ public final class HorrorEventActions {
                 ready.add(pos);
             }
         }
-        if (ready.isEmpty()) {
-            return null;
-        }
-        return ready.get(level.getRandom().nextInt(ready.size()));
+        return ready;
     }
 
     private static boolean isTorch(BlockState state) {
@@ -769,12 +821,22 @@ public final class HorrorEventActions {
     }
 
     /**
-     * Wrong-pitch steps are heard by the local player. Both sides share this in a singleplayer game.
+     * Wrong steps are louder and the wrong pitch. Both sides share this in a singleplayer game.
      */
     public static float adjustStepPitch(Player player, float original) {
+        StepPitch step = activeStep(player);
+        return step == null ? original : step.pitch;
+    }
+
+    public static float adjustStepVolume(Player player, float original) {
+        StepPitch step = activeStep(player);
+        return step == null ? original : original * WRONG_STEP_VOLUME;
+    }
+
+    private static StepPitch activeStep(Player player) {
         StepPitch step = STEPS.get(player.getUUID());
         if (step == null) {
-            return original;
+            return null;
         }
         synchronized (step) {
             long now = player.level().getGameTime();
@@ -784,9 +846,9 @@ public final class HorrorEventActions {
             }
             if (step.left < 0) {
                 STEPS.remove(player.getUUID(), step);
-                return original;
+                return null;
             }
-            return step.pitch;
+            return step;
         }
     }
 
@@ -821,7 +883,7 @@ public final class HorrorEventActions {
                     y,
                     z,
                     type.getStepSound(),
-                    Math.max(0.25F, type.getVolume() * 0.5F),
+                    Math.max(0.35F, type.getVolume() * 0.7F),
                     type.getPitch() * (0.85F + random.nextFloat() * 0.3F)
             );
         }
@@ -850,13 +912,27 @@ public final class HorrorEventActions {
         }
         shuffle(walks, level.getRandom());
         for (BlockPos pos : walks) {
-            BlockPos ground = grassAt(level, pos);
-            if (ground != null && !lookingAt(player, Vec3.atCenterOf(ground), 64.0)) {
-                level.setBlock(ground, Blocks.DIRT.defaultBlockState(), Block.UPDATE_ALL);
+            if (grassPatch(level, player, pos)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /** Turns a square of grass around one walked spot into dirt, leaving any block still in view. */
+    private static boolean grassPatch(ServerLevel level, ServerPlayer player, BlockPos origin) {
+        boolean changed = false;
+        for (int dx = -GRASS_RADIUS; dx <= GRASS_RADIUS; dx++) {
+            for (int dz = -GRASS_RADIUS; dz <= GRASS_RADIUS; dz++) {
+                BlockPos ground = grassAt(level, new BlockPos(origin.getX() + dx, origin.getY(), origin.getZ() + dz));
+                if (ground == null || lookingAt(player, Vec3.atCenterOf(ground), 64.0)) {
+                    continue;
+                }
+                level.setBlock(ground, Blocks.DIRT.defaultBlockState(), Block.UPDATE_ALL);
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     private static boolean ghostMine(ServerLevel level, ServerPlayer player) {
@@ -900,7 +976,10 @@ public final class HorrorEventActions {
         synchronized (chests) {
             chests.removeIf(pos -> level.isLoaded(pos) && !(level.getBlockState(pos).getBlock() instanceof ChestBlock));
             for (BlockPos pos : chests) {
-                if (!level.isLoaded(pos) || ChestBlockEntity.getOpenCount(level, pos) > 0 || lookingAt(player, Vec3.atCenterOf(pos), 64.0)) {
+                if (!level.isLoaded(pos)
+                        || player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) > CHEST_REACH
+                        || ChestBlockEntity.getOpenCount(level, pos) > 0
+                        || lookingAt(player, Vec3.atCenterOf(pos), 64.0)) {
                     continue;
                 }
                 ready.add(pos);
@@ -915,30 +994,6 @@ public final class HorrorEventActions {
         }
         float pitch = 0.9F + level.getRandom().nextFloat() * 0.1F;
         level.playSound(null, pos, chest.getOpenChestSound(), SoundSource.BLOCKS, 0.5F, pitch);
-        return true;
-    }
-
-    private static boolean offhandTrade(ServerPlayer player, PlayerMemory memory) {
-        if (memory.inventoryVisible()) {
-            return false;
-        }
-        Inventory inventory = player.getInventory();
-        boolean offhandFilled = !player.getOffhandItem().isEmpty();
-        List<Integer> slots = new ArrayList<>();
-        for (int slot = 0; slot < HOTBAR; slot++) {
-            if (offhandFilled || !inventory.getItem(slot).isEmpty()) {
-                slots.add(slot);
-            }
-        }
-        if (slots.isEmpty()) {
-            return false;
-        }
-        int slot = slots.get(player.getRandom().nextInt(slots.size()));
-        ItemStack offhand = player.getItemBySlot(EquipmentSlot.OFFHAND).copy();
-        ItemStack hotbar = inventory.getItem(slot).copy();
-        inventory.setItem(slot, offhand);
-        player.setItemSlot(EquipmentSlot.OFFHAND, hotbar);
-        syncInventory(player);
         return true;
     }
 

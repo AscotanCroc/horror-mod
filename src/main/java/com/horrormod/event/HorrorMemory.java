@@ -129,9 +129,16 @@ public final class HorrorMemory extends SavedData {
                 float effectStretchY
         ) {
             PlayerMemory memory = new PlayerMemory();
-            memory.used.addAll(used);
+            for (String id : used) {
+                if (HorrorEvent.byId(id) != null) {
+                    memory.used.add(id);
+                }
+            }
             memory.nextRoll = nextRoll;
             memory.pending = pending;
+            if (!memory.pendingId().isEmpty() && HorrorEvent.byId(memory.pendingId()) == null) {
+                memory.pending = "";
+            }
             memory.walks.addAll(walks);
             memory.torches.addAll(torches);
             memory.placed.addAll(placed);

@@ -1,6 +1,8 @@
 package com.horrormod.entity;
 
+import com.horrormod.event.HorrorEventActions;
 import com.horrormod.sound.ReverseEndermanSounds;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
@@ -9,6 +11,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.Enderman;
 import net.minecraft.world.level.Level;
@@ -29,22 +32,26 @@ public class ReverseEnderman extends Enderman {
 
     @Override
     public void aiStep() {
-        if (!this.level().isClientSide() && this.isAlive() && this.isInSunlight()) {
+        if (!this.level().isClientSide() && this.isAlive() && inSunlight(this)) {
+            if (this.level() instanceof ServerLevel server) {
+                HorrorEventActions.flickerIfSeen(server, this);
+            }
             this.discard();
             return;
         }
         super.aiStep();
     }
 
-    private boolean isInSunlight() {
-        Level level = this.level();
+    /** True when the sky is bright and open above the mob's feet or eyes. */
+    public static boolean inSunlight(LivingEntity entity) {
+        Level level = entity.level();
         if (!level.isBrightOutside()) {
             return false;
         }
-        if (level.canSeeSky(this.blockPosition())) {
+        if (level.canSeeSky(entity.blockPosition())) {
             return true;
         }
-        return level.canSeeSky(BlockPos.containing(this.getX(), this.getEyeY(), this.getZ()));
+        return level.canSeeSky(BlockPos.containing(entity.getX(), entity.getEyeY(), entity.getZ()));
     }
 
     public static boolean checkNaturalSpawn(
