@@ -1,5 +1,6 @@
 package com.horrormod.entity;
 
+import com.horrormod.content.HorrorBlocks;
 import com.horrormod.sound.ReverseZombieSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -33,6 +34,19 @@ public class ReverseZombie extends Zombie {
     @Override
     public void setBaby(boolean baby) {
         super.setBaby(false);
+    }
+
+    @Override
+    public void die(DamageSource source) {
+        boolean sunlight = diedInSunlight(source);
+        super.die(source);
+        if (sunlight || !(this.level() instanceof ServerLevel server)) {
+            return;
+        }
+        BlockPos pos = this.blockPosition();
+        if (server.getBlockState(pos).isAir() || server.getBlockState(pos).canBeReplaced()) {
+            server.setBlock(pos, HorrorBlocks.ROT.defaultBlockState(), 3);
+        }
     }
 
     @Override

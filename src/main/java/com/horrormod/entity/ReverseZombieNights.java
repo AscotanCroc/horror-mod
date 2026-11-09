@@ -25,13 +25,14 @@ import net.minecraft.world.level.levelgen.Heightmap;
  */
 public final class ReverseZombieNights {
     private static final int ATTEMPTS = 12;
-    /** Clear nights stay a coin flip. A thunderstorm nudges that to three in five. */
-    private static final float STORM_NIGHT_CHANCE = 0.6F;
+    /** A little under the old coin flip. A thunderstorm brings it back to even odds. */
+    private static final float NIGHT_CHANCE = 0.4F;
+    private static final float STORM_NIGHT_CHANCE = 0.5F;
     /**
      * Applied once, only if the night was already skipped, so a storm that arrives later
-     * lands on the same three-in-five chance instead of stacking a second roll.
+     * lands on the storm chance instead of stacking a second roll.
      */
-    private static final float STORM_CATCHUP = 0.2F;
+    private static final float STORM_CATCHUP = 1.0F / 6.0F;
     private final Map<UUID, NightProgress> spawnedNight = new HashMap<>();
 
     private ReverseZombieNights() {
@@ -52,7 +53,7 @@ public final class ReverseZombieNights {
         if (!level.getGameRules().get(GameRules.SPAWN_MOBS) || !level.getGameRules().get(GameRules.SPAWN_MONSTERS)) {
             return;
         }
-        if (!ReverseMonsterSpawns.surfaceNight(level)) {
+        if (!ReverseMonsterSpawns.firstNightStarted(level) || !ReverseMonsterSpawns.surfaceNight(level)) {
             return;
         }
         long time = level.getOverworldClockTime();
@@ -66,7 +67,7 @@ public final class ReverseZombieNights {
                 progress.nightId = nightId;
                 progress.spawned = false;
                 progress.stormCounted = ReverseMonsterSpawns.storming(level);
-                float chance = progress.stormCounted ? STORM_NIGHT_CHANCE : 0.5F;
+                float chance = progress.stormCounted ? STORM_NIGHT_CHANCE : NIGHT_CHANCE;
                 progress.spawnTonight = level.getRandom().nextFloat() < chance;
                 progress.kind = level.getRandom().nextInt(NightKind.values().length);
             }

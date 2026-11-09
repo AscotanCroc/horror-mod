@@ -1,5 +1,6 @@
 package com.horrormod.entity;
 
+import com.horrormod.content.VeinBlock;
 import com.horrormod.event.HorrorEventActions;
 import com.horrormod.sound.ReverseEndermanSounds;
 import net.minecraft.server.level.ServerLevel;
@@ -76,6 +77,19 @@ public class ReverseEnderman extends Enderman {
             ReverseSpawnCooldown.mark(level);
         }
         return result;
+    }
+
+    @Override
+    public void die(DamageSource source) {
+        if (this.level() instanceof ServerLevel server) {
+            VeinBlock.scar(server, this.blockPosition());
+        }
+        super.die(source);
+    }
+
+    @Override
+    public void playSound(SoundEvent sound, float volume, float pitch) {
+        super.playSound(sound, volume * 2.8F, Math.min(2.3F, pitch * 1.65F));
     }
 
     @Override

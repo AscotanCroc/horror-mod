@@ -1,0 +1,12 @@
+package com.horrormod.mixin;
+
+import net.minecraft.world.level.chunk.LightChunkGetter;
+import net.minecraft.world.level.lighting.LightEngine;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
+
+@Mixin(LightEngine.class)
+public interface HorrorLightEngineAccessor {
+    @Accessor("chunkSource")
+    LightChunkGetter horror$chunkSource();
+}

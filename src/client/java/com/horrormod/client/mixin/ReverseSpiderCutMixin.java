@@ -28,7 +28,7 @@ public abstract class ReverseSpiderCutMixin {
         if (ReverseSpiderSounds.glitches(sound.getIdentifier())) {
             callback.setReturnValue(this.calculateVolume(1.0F, sound.getSource()) * 3.4F);
         } else if (ReverseSpiderSounds.KILL.location().equals(sound.getIdentifier())) {
-            callback.setReturnValue(this.calculateVolume(1.0F, sound.getSource()) * 1.45F);
+            callback.setReturnValue(this.calculateVolume(1.0F, sound.getSource()) * 2.4F);
         }
     }
 }

@@ -15,24 +15,31 @@ import net.minecraft.world.level.saveddata.WeatherData;
  * Shared natural-spawn rules for every reverse monster, so each is equally rare.
  */
 public final class ReverseMonsterSpawns {
-    /** Half the previous average weight, shared by every reverse monster. */
-    public static final int WEIGHT = 4;
+    /** Shared by every reverse monster, a little under the previous weight. */
+    public static final int WEIGHT = 3;
 
     /** Surface reverse monsters can spawn from this time through {@link #SURFACE_NIGHT_END}. */
     public static final int SURFACE_NIGHT_START = 13000;
     public static final int SURFACE_NIGHT_END = 23000;
     /** Below this Y is the deep underground band. */
     private static final int DEEP_Y = -16;
-    /** Twice as strict as the old reverse-zombie surface roll. */
-    private static final int SURFACE_CHANCE = 48;
+    /** A little rarer than the previous surface roll. Same number for every reverse monster. */
+    private static final int SURFACE_CHANCE = 56;
     /** A thunderstorm makes the surface roll a little more common. */
-    private static final int STORM_SURFACE_CHANCE = 40;
-    /** Twice as strict as the old reverse-zombie deep roll. */
-    private static final int DEEP_CHANCE = 8;
+    private static final int STORM_SURFACE_CHANCE = 48;
+    /** A little rarer than the previous deep roll. Same number for every reverse monster. */
+    private static final int DEEP_CHANCE = 10;
     /** A thunderstorm makes the deep roll a little more common. */
-    private static final int STORM_DEEP_CHANCE = 7;
+    private static final int STORM_DEEP_CHANCE = 8;
 
     private ReverseMonsterSpawns() {
+    }
+
+    /**
+     * False until the clock reaches the first surface night. Later days stay open.
+     */
+    public static boolean firstNightStarted(Level level) {
+        return level.getOverworldClockTime() >= SURFACE_NIGHT_START;
     }
 
     /**
@@ -63,7 +70,7 @@ public final class ReverseMonsterSpawns {
         if (reason != EntitySpawnReason.NATURAL && reason != EntitySpawnReason.CHUNK_GENERATION) {
             return true;
         }
-        if (ReverseSpawnCooldown.isBlocked(level)) {
+        if (!firstNightStarted(level.getLevel()) || ReverseSpawnCooldown.isBlocked(level)) {
             return false;
         }
         if (level.getBrightness(LightLayer.BLOCK, pos) > 0) {

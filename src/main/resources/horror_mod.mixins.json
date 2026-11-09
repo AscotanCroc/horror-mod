@@ -8,6 +8,8 @@
     "BlockPlaceMixin",
     "ChestOpenMixin",
     "CreeperExplodeMixin",
+    "CreeperLightMixin",
+    "HorrorLightEngineAccessor",
     "ReverseCreeperSoundMixin",
     "BatSpawnMixin",
     "BeehiveDecoratorMixin",

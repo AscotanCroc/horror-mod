@@ -20,7 +20,7 @@ public class ReverseCreeperSoundMixin {
     )
     private void horror$reversePrimed(Creeper creeper, SoundEvent sound, float volume, float pitch) {
         if (creeper instanceof ReverseCreeper) {
-            creeper.level().playSound(null, creeper.getX(), creeper.getY(), creeper.getZ(), ReverseCreeperSounds.PRIMED, SoundSource.HOSTILE, volume, 1.0F);
+            creeper.level().playSound(null, creeper.getX(), creeper.getY(), creeper.getZ(), ReverseCreeperSounds.PRIMED, SoundSource.HOSTILE, volume * 2.6F, 1.2F);
             return;
         }
         creeper.level().playSound(null, creeper.getX(), creeper.getY(), creeper.getZ(), sound, SoundSource.HOSTILE, volume, pitch);

@@ -48,6 +48,35 @@ public final class HorrorBlocks {
             HorrorMod.id("black_cobweb")
     );
 
+    public static final BlockItemId VEIN_ID = BlockItemId.create(
+            HorrorMod.id("vein"),
+            HorrorMod.id("vein")
+    );
+
+    public static final Block VEIN = register(
+            VEIN_ID,
+            VeinBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_BLACK)
+                    .sound(SoundType.WOOD)
+                    .strength(0.2F)
+                    .emissiveRendering(state -> true)
+    );
+
+    public static final BlockItemId ROT_ID = BlockItemId.create(
+            HorrorMod.id("rot"),
+            HorrorMod.id("rot")
+    );
+
+    public static final Block ROT = register(
+            ROT_ID,
+            RotBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_BLACK)
+                    .sound(SoundType.WART_BLOCK)
+                    .strength(0.6F)
+    );
+
     public static final Block BLACK_COBWEB = register(
             BLACK_COBWEB_ID,
             BlackCobwebBlock::new,
@@ -81,6 +110,8 @@ public final class HorrorBlocks {
         HorrorMod.LOGGER.info("Registered sample block {}", SAMPLE_BLOCK_ID.block());
         HorrorMod.LOGGER.info("Registered stone lectern {}", STONE_LECTERN_ID.block());
         HorrorMod.LOGGER.info("Registered black cobweb {}", BLACK_COBWEB_ID.block());
+        HorrorMod.LOGGER.info("Registered vein {}", VEIN_ID.block());
+        HorrorMod.LOGGER.info("Registered rot {}", ROT_ID.block());
     }
 
     private static Block register(BlockItemId id, Function<BlockBehaviour.Properties, Block> factory, BlockBehaviour.Properties properties) {

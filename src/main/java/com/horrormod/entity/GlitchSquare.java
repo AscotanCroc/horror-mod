@@ -22,7 +22,6 @@ public class GlitchSquare extends ThrowableProjectile {
     private static final int LIFE_TICKS = 80;
     private static final int BURST = 72;
     private static final float GLITCH_VOLUME = 4.0F;
-    private static final float GLITCH_PITCH = 3.0F;
 
     public GlitchSquare(EntityType<? extends GlitchSquare> type, Level level) {
         super(type, level);
@@ -78,7 +77,11 @@ public class GlitchSquare extends ThrowableProjectile {
         double x = target.getX();
         double y = target.getY() + target.getBbHeight() * 0.5;
         double z = target.getZ();
-        level.playSound(null, x, y, z, HorrorSounds.GLITCH_TRANSITION, SoundSource.MASTER, GLITCH_VOLUME, GLITCH_PITCH);
+        int copies = 2 + level.getRandom().nextInt(2);
+        for (int copy = 0; copy < copies; copy++) {
+            float pitch = 0.65F + level.getRandom().nextFloat() * 2.1F;
+            level.playSound(null, x, y, z, HorrorSounds.GLITCH_TRANSITION, SoundSource.MASTER, GLITCH_VOLUME, pitch);
+        }
         level.sendParticles(HorrorParticles.GLITCH_SQUARE, x, y, z, BURST, 0.45, 0.45, 0.45, 0.18);
         target.discard();
     }

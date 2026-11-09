@@ -4,6 +4,8 @@ import com.horrormod.HorrorMod;
 import net.minecraft.client.renderer.entity.EndermanRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EndermanRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 
 public class ReverseEndermanRenderer extends EndermanRenderer {
@@ -17,5 +19,10 @@ public class ReverseEndermanRenderer extends EndermanRenderer {
     @Override
     public Identifier getTextureLocation(EndermanRenderState state) {
         return TEXTURE;
+    }
+
+    @Override
+    protected RenderType getRenderType(EndermanRenderState state, boolean bodyVisible, boolean translucent, boolean glowing) {
+        return RenderTypes.entityTranslucentEmissive(TEXTURE);
     }
 }

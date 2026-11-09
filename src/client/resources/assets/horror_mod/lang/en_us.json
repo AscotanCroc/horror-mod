@@ -19,6 +19,8 @@
   "entity.horror_mod.reverse_spider": "Reverse Spider",
   "item.horror_mod.reverse_spider_spawn_egg": "Reverse Spider Spawn Egg",
   "block.horror_mod.black_cobweb": "Black Cobweb",
+  "block.horror_mod.vein": "Vein",
+  "block.horror_mod.rot": "rot",
   "death.attack.passed_away": "%1$s passed away",
   "itemGroup.horror_mod.sample": "Sample",
   "screen.horror_mod.stone_lectern": "Recipe"

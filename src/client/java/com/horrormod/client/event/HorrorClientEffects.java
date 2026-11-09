@@ -57,6 +57,7 @@ public final class HorrorClientEffects {
     }
 
     public static void render(GuiGraphicsExtractor graphics) {
+        WhiteFlash.render(graphics);
         if (VeilRitual.active()) {
             VeilRitual.render(graphics);
             return;

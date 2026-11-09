@@ -4,6 +4,8 @@ import com.horrormod.HorrorMod;
 import com.horrormod.client.entity.ClientNullClone;
 import com.horrormod.client.event.HorrorClientEffects;
 import com.horrormod.client.event.SpiderSnap;
+import com.horrormod.client.event.WhiteFlash;
+import com.horrormod.client.particle.BlackSmokeParticle;
 import com.horrormod.client.particle.BlackSquareParticle;
 import com.horrormod.client.particle.GlitchSquareParticle;
 import com.horrormod.entity.HorrorParticles;
@@ -30,6 +32,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import com.horrormod.entity.HorrorEntities;
 import com.horrormod.network.OpenRecipePayload;
 import com.horrormod.network.SpiderSnapPayload;
+import com.horrormod.network.WhiteFlashPayload;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
@@ -43,8 +46,12 @@ public final class HorrorModClient implements ClientModInitializer {
         VeilRitual.initialize();
         ParticleProviderRegistry.getInstance().register(HorrorParticles.GLITCH_SQUARE, GlitchSquareParticle.Provider::new);
         ParticleProviderRegistry.getInstance().register(HorrorParticles.BLACK_SQUARE, BlackSquareParticle.Provider::new);
+        ParticleProviderRegistry.getInstance().register(HorrorParticles.BLACK_SMOKE, BlackSmokeParticle.Provider::new);
         ClientPlayNetworking.registerGlobalReceiver(SpiderSnapPayload.TYPE, (payload, context) ->
                 context.client().execute(SpiderSnap::begin)
+        );
+        ClientPlayNetworking.registerGlobalReceiver(WhiteFlashPayload.TYPE, (payload, context) ->
+                context.client().execute(WhiteFlash::begin)
         );
         VeilItemPipeline.initialize();
         VeilLecternRender.initialize();
@@ -61,6 +68,7 @@ public final class HorrorModClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(minecraft -> {
             ReverseSpiderAudio.tick();
             SpiderSnap.tick(minecraft);
+            WhiteFlash.tick();
         });
         EntityRendererRegistry.register(HorrorEntities.GLITCH_SQUARE, GlitchSquareRenderer::new);
         EntityRendererRegistry.register(HorrorEntities.WATDATMEAN, WatdatmeanRenderer::new);

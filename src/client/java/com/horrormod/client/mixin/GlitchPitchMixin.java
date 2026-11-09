@@ -15,7 +15,7 @@ public class GlitchPitchMixin {
     @WrapOperation(method = "calculatePitch", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;clamp(FFF)F"))
     private float horror$glitchSpeed(float value, float min, float max, Operation<Float> original, SoundInstance sound) {
         if (ReverseSpiderSounds.KILL.location().equals(sound.getIdentifier())) {
-            return Mth.clamp(value, 0.5F, 2.5F);
+            return Mth.clamp(value, 0.5F, 3.0F);
         }
         if (HorrorSounds.GLITCH_TRANSITION.location().equals(sound.getIdentifier())) {
             return Mth.clamp(value, 0.5F, 3.0F);

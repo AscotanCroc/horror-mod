@@ -107,9 +107,11 @@ public class ReverseSkeletonModel extends SkeletonModel<SkeletonRenderState> {
     public void setupAnim(SkeletonRenderState state) {
         super.setupAnim(state);
         float time = state.ageInTicks;
-        float dx = Mth.sin(time * 3.4F) * 0.45F;
-        float dy = Mth.sin(time * 5.1F) * 0.3F;
-        float dz = Mth.cos(time * 4.2F) * 0.35F;
+        float local = time % 64.0F;
+        float kick = local < 5.0F ? Mth.sin(local * 7.0F) : 0.0F;
+        float dx = kick * 1.6F;
+        float dy = kick * 0.7F;
+        float dz = kick * -1.1F;
         for (int index = 0; index < this.shakingHeads.length; index++) {
             ModelPart skull = this.shakingHeads[index];
             skull.x = this.baseX[index] + dx;

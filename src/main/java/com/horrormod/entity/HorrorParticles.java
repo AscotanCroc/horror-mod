@@ -17,6 +17,11 @@ public final class HorrorParticles {
             HorrorMod.id("black_square"),
             FabricParticleTypes.simple()
     );
+    public static final SimpleParticleType BLACK_SMOKE = Registry.register(
+            BuiltInRegistries.PARTICLE_TYPE,
+            HorrorMod.id("black_smoke"),
+            FabricParticleTypes.simple()
+    );
 
     private HorrorParticles() {
     }

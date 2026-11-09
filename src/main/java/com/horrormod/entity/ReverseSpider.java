@@ -93,8 +93,12 @@ public class ReverseSpider extends Spider {
         this.burst = true;
         if (this.level() instanceof ServerLevel level) {
             spread(level);
-            float speed = 0.5F + level.getRandom().nextFloat() * 1.9F;
-            level.playSound(null, this.getX(), this.getY(), this.getZ(), ReverseSpiderSounds.KILL, SoundSource.MASTER, 1.6F, speed);
+            int copies = 2 + level.getRandom().nextInt(2);
+            float pitch = 1.9F + level.getRandom().nextFloat() * 0.7F;
+            for (int copy = 0; copy < copies; copy++) {
+                level.playSound(null, this.getX(), this.getY(), this.getZ(), ReverseSpiderSounds.KILL, SoundSource.MASTER, 2.6F, pitch);
+            }
+            BlackCobwebBlock.flash(level, this.getX(), this.getY(), this.getZ());
             level.sendParticles(
                     HorrorParticles.BLACK_SQUARE,
                     this.getX(),
