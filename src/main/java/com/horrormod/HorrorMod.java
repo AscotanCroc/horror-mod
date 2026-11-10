@@ -10,6 +10,7 @@ import com.horrormod.network.HorrorEffectPayload;
 import com.horrormod.network.InventoryVisiblePayload;
 import com.horrormod.network.OpenRecipePayload;
 import com.horrormod.network.SpiderSnapPayload;
+import com.horrormod.network.VeilCutsceneDonePayload;
 import com.horrormod.network.VeilRitualPayload;
 import com.horrormod.network.WhiteFlashPayload;
 import com.horrormod.sound.HorrorSounds;
@@ -51,7 +52,6 @@ public final class HorrorMod implements ModInitializer {
         ReverseSpiderSounds.initialize();
         HorrorParticles.initialize();
         HorrorEntities.initialize();
-        HorrorWorld.initialize();
         PayloadTypeRegistry.clientboundPlay().register(OpenRecipePayload.TYPE, OpenRecipePayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(HorrorEffectPayload.TYPE, HorrorEffectPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(BlackoutPayload.TYPE, BlackoutPayload.CODEC);
@@ -59,6 +59,8 @@ public final class HorrorMod implements ModInitializer {
         PayloadTypeRegistry.clientboundPlay().register(SpiderSnapPayload.TYPE, SpiderSnapPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(WhiteFlashPayload.TYPE, WhiteFlashPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(InventoryVisiblePayload.TYPE, InventoryVisiblePayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(VeilCutsceneDonePayload.TYPE, VeilCutsceneDonePayload.CODEC);
+        HorrorWorld.initialize();
         HorrorEventScheduler.initialize();
     }
 }

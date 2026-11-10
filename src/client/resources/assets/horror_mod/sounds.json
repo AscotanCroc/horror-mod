@@ -236,5 +236,13 @@
         "stream": true
       }
     ]
+  },
+  "veil_scream": {
+    "sounds": [
+      {
+        "name": "horror_mod:veil_scream",
+        "stream": true
+      }
+    ]
   }
 }

@@ -11,6 +11,7 @@ public final class HorrorSounds {
     public static final SoundEvent GLITCH_TRANSITION = register("glitch_transition");
     public static final SoundEvent WHISPER = register("whisper");
     public static final SoundEvent VEIL = register("veil");
+    public static final SoundEvent VEIL_SCREAM = register("veil_scream");
 
     private HorrorSounds() {
     }

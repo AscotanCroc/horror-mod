@@ -1,5 +1,6 @@
 package com.horrormod.client.sound;
 
+import com.horrormod.client.event.VeilRitual;
 import com.horrormod.sound.HorrorSounds;
 import com.horrormod.world.HorrorDimensions;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLevelEvents;
@@ -31,6 +32,15 @@ public final class HorrorAmbience {
 
     private static void onLevelChange(Minecraft client, ClientLevel level) {
         client.getMusicManager().stopPlaying();
+        if (VeilRitual.active()) {
+            stop(client, day);
+            stop(client, night);
+            stop(client, veil);
+            day = null;
+            night = null;
+            veil = null;
+            return;
+        }
         restart(client, level);
     }
 

@@ -6,7 +6,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 /**
- * Tells one client to black out, silence, and reveal the veil face over the dimension change.
+ * Tells one client to play the veil video over the dimension change.
  */
 public record VeilRitualPayload() implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<VeilRitualPayload> TYPE = new CustomPacketPayload.Type<>(HorrorMod.id("veil_ritual"));
