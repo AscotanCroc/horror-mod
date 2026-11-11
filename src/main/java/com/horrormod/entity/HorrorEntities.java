@@ -15,6 +15,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.SpawnPlacementTypes;
+import com.horrormod.content.EyeItem;
 import com.horrormod.content.NullPointerItem;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Enderman;
@@ -119,6 +120,31 @@ public final class HorrorEntities {
             BuiltInRegistries.ITEM,
             VEIL_KEY,
             new Item(new Item.Properties().setId(VEIL_KEY))
+    );
+
+    public static final ResourceKey<Item> DISSAPEARANCE_KEY = ResourceKey.create(Registries.ITEM, HorrorMod.id("dissapearance"));
+
+    public static final Item DISSAPEARANCE = Registry.register(
+            BuiltInRegistries.ITEM,
+            DISSAPEARANCE_KEY,
+            new Item(new Item.Properties().setId(DISSAPEARANCE_KEY))
+    );
+
+    public static final ResourceKey<Item> EYE_KEY = ResourceKey.create(Registries.ITEM, HorrorMod.id("eye"));
+
+    public static final Item EYE = Registry.register(
+            BuiltInRegistries.ITEM,
+            EYE_KEY,
+            new EyeItem(new Item.Properties().setId(EYE_KEY))
+    );
+
+    /** Crafted from the five reverse drops, then used in place of savior for the veil. */
+    public static final ResourceKey<Item> FIVE_KEY = ResourceKey.create(Registries.ITEM, HorrorMod.id("five"));
+
+    public static final Item FIVE = Registry.register(
+            BuiltInRegistries.ITEM,
+            FIVE_KEY,
+            new Item(new Item.Properties().setId(FIVE_KEY))
     );
 
     public static final EntityType<NullClone> NULL_CLONE = Registry.register(

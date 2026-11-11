@@ -11,7 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 /**
- * The lectern recipe: a crafting grid and its result, drifting with a fading rainbow trail.
+ * The lectern recipes: the veil, and the item it is made from, each drifting with a fading rainbow trail.
  */
 public class RecipeScreen extends Screen {
     private static final Identifier CRAFTING_TABLE = Identifier.withDefaultNamespace("textures/gui/container/crafting_table.png");
@@ -22,13 +22,31 @@ public class RecipeScreen extends Screen {
     private static final int IMAGE_HEIGHT = 66;
     private static final int TRAIL = 8;
 
-    private final ItemStack bone = new ItemStack(Items.BONE);
-    private final ItemStack iron = new ItemStack(Items.IRON_INGOT);
-    private final ItemStack savior = new ItemStack(HorrorEntities.SAVIOR);
-    private final ItemStack result = new ItemStack(HorrorEntities.VEIL);
+    private final ItemStack[] veilGrid = grid(
+            new ItemStack(Items.BONE),
+            new ItemStack(Items.IRON_INGOT),
+            new ItemStack(HorrorEntities.FIVE)
+    );
+    private final ItemStack veilResult = new ItemStack(HorrorEntities.VEIL);
+    private final ItemStack[] fiveGrid = grid(
+            new ItemStack(HorrorEntities.GLITCH),
+            new ItemStack(HorrorEntities.NULL_POINTER),
+            new ItemStack(HorrorEntities.SAVIOR),
+            new ItemStack(HorrorEntities.DISSAPEARANCE),
+            new ItemStack(HorrorEntities.EYE)
+    );
+    private final ItemStack fiveResult = new ItemStack(HorrorEntities.FIVE);
 
     public RecipeScreen() {
         super(Component.translatable("screen.horror_mod.stone_lectern"));
+    }
+
+    private static ItemStack[] grid(ItemStack... filled) {
+        ItemStack[] grid = new ItemStack[9];
+        for (int index = 0; index < grid.length; index++) {
+            grid[index] = index < filled.length ? filled[index] : ItemStack.EMPTY;
+        }
+        return grid;
     }
 
     @Override
@@ -45,23 +63,36 @@ public class RecipeScreen extends Screen {
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         long clock = this.minecraft.level == null ? 0L : this.minecraft.level.getOverworldClockTime();
         float time = (float) (clock % 100000L) + partialTick;
-        int[] current = panelOrigin(time);
+        drawHovering(graphics, this.veilGrid, this.veilResult, time, 0.0F, 0.32F, 0.28F);
+        drawHovering(graphics, this.fiveGrid, this.fiveResult, time, 1.7F, 0.68F, 0.70F);
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+    }
+
+    private void drawHovering(
+            GuiGraphicsExtractor graphics,
+            ItemStack[] grid,
+            ItemStack result,
+            float time,
+            float phase,
+            float anchorX,
+            float anchorY
+    ) {
+        int[] current = panelOrigin(time, phase, anchorX, anchorY);
         int[][] ghosts = new int[TRAIL][];
         float maxDistance = 1.0F;
         for (int ghost = 0; ghost < TRAIL; ghost++) {
-            ghosts[ghost] = panelOrigin(time - (ghost + 1) * 3.0F);
+            ghosts[ghost] = panelOrigin(time - (ghost + 1) * 3.0F, phase, anchorX, anchorY);
             maxDistance = Math.max(maxDistance, distance(current, ghosts[ghost]));
         }
         for (int ghost = TRAIL - 1; ghost >= 0; ghost--) {
             float away = distance(current, ghosts[ghost]) / maxDistance;
             int alpha = Math.round(24.0F + 196.0F * (1.0F - away));
-            drawRecipe(graphics, ghosts[ghost][0], ghosts[ghost][1], rainbow(time - ghost * 6.0F, alpha));
+            drawRecipe(graphics, ghosts[ghost][0], ghosts[ghost][1], rainbow(time - ghost * 6.0F, alpha), grid, result);
         }
-        drawRecipe(graphics, current[0], current[1], 0xFFFFFFFF);
-        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        drawRecipe(graphics, current[0], current[1], 0xFFFFFFFF, grid, result);
     }
 
-    private void drawRecipe(GuiGraphicsExtractor graphics, int x, int y, int color) {
+    private void drawRecipe(GuiGraphicsExtractor graphics, int x, int y, int color, ItemStack[] grid, ItemStack result) {
         graphics.blit(
                 RenderPipelines.GUI_TEXTURED,
                 CRAFTING_TABLE,
@@ -79,16 +110,11 @@ public class RecipeScreen extends Screen {
         if (alpha < 90) {
             return;
         }
-        drawGrid(graphics, x, y);
-        graphics.item(this.result, x + 124 - CROP_U, y + 35 - CROP_V);
+        drawGrid(graphics, x, y, grid);
+        graphics.item(result, x + 124 - CROP_U, y + 35 - CROP_V);
     }
 
-    private void drawGrid(GuiGraphicsExtractor graphics, int x, int y) {
-        ItemStack[] grid = {
-                this.bone, this.iron, this.savior,
-                ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY,
-                ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY
-        };
+    private void drawGrid(GuiGraphicsExtractor graphics, int x, int y, ItemStack[] grid) {
         for (int index = 0; index < grid.length; index++) {
             if (grid[index].isEmpty()) {
                 continue;
@@ -99,14 +125,16 @@ public class RecipeScreen extends Screen {
         }
     }
 
-    private int[] panelOrigin(float time) {
-        float seconds = time / 20.0F;
+    private int[] panelOrigin(float time, float phase, float anchorX, float anchorY) {
+        float seconds = time / 20.0F + phase;
         float nx = (float) (Math.sin(seconds * 0.28) * 0.58 + Math.sin(seconds * 0.10 + 0.6) * 0.42);
         float ny = (float) (Math.cos(seconds * 0.22) * 0.55 + Math.sin(seconds * 0.08 + 2.0) * 0.45);
         int spanX = Math.max(1, this.width - IMAGE_WIDTH);
         int spanY = Math.max(1, this.height - IMAGE_HEIGHT);
-        int x = Math.round(spanX * (0.5F + nx * 0.18F));
-        int y = Math.round(spanY * (0.5F + ny * 0.18F));
+        int x = Math.round(spanX * (anchorX + nx * 0.10F));
+        int y = Math.round(spanY * (anchorY + ny * 0.10F));
+        x = Math.max(0, Math.min(spanX, x));
+        y = Math.max(0, Math.min(spanY, y));
         return new int[] {x, y};
     }
 

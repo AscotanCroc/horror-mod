@@ -33,7 +33,8 @@ import net.minecraft.util.RandomSource;
 
 /**
  * Full-screen video over the trip into the veil, including the loading screen.
- * The picture is rotated 90 degrees and flipped 180 degrees on a random 2–4 second beat.
+ * The portrait frame is turned on its side and scaled to cover the screen.
+ * It turns upside down on a random 2–4 second beat.
  * Frames live in {@code assets/horror_mod/veil_cutscene}. The scream is {@code veil_scream.ogg}.
  */
 public final class VeilRitual {
@@ -57,7 +58,7 @@ public final class VeilRitual {
 
     private static byte[][] frames;
     private static DynamicTexture texture;
-    private static byte[] rotated;
+    private static byte[] packed;
     private static int[] scratch;
     private static int[] readyPixels;
     private static int readyFrame = -1;
@@ -149,20 +150,34 @@ public final class VeilRitual {
         graphics.fill(0, 0, width, height, 0xFF000000);
         turnIfDue();
         int frame = frameIndex();
-        if (frames != null && paint(frame)) {
-            graphics.blit(
-                    RenderPipelines.GUI_TEXTURED,
-                    TEXTURE,
-                    0,
-                    0,
-                    0.0F,
-                    0.0F,
-                    width,
-                    height,
-                    FRAME_HEIGHT,
-                    FRAME_WIDTH
-            );
+        if (frames == null || !paint(frame)) {
+            return;
         }
+        int texWidth = FRAME_HEIGHT;
+        int texHeight = FRAME_WIDTH;
+        int destWidth;
+        int destHeight;
+        if ((long) width * texHeight >= (long) height * texWidth) {
+            destWidth = width;
+            destHeight = (int) (((long) width * texHeight + texWidth - 1) / texWidth);
+        } else {
+            destHeight = height;
+            destWidth = (int) (((long) height * texWidth + texHeight - 1) / texHeight);
+        }
+        graphics.blit(
+                RenderPipelines.GUI_TEXTURED,
+                TEXTURE,
+                (width - destWidth) / 2,
+                (height - destHeight) / 2,
+                0.0F,
+                0.0F,
+                destWidth,
+                destHeight,
+                texWidth,
+                texHeight,
+                texWidth,
+                texHeight
+        );
     }
 
     private static int frameIndex() {
@@ -209,7 +224,7 @@ public final class VeilRitual {
                 if (available < 0 || readyPixels == null) {
                     return texture != null;
                 }
-                rotateInto(texture.getPixels(), readyPixels);
+                writeInto(texture.getPixels(), readyPixels);
             }
             texture.upload();
             paintedFrame = available;
@@ -263,12 +278,12 @@ public final class VeilRitual {
     }
 
     /**
-     * Writes the portrait frame on its side. {@code upsideDown} turns that result another 180 degrees.
+     * Turns the portrait frame on its side. {@code upsideDown} turns that result another 180 degrees.
      */
-    private static void rotateInto(NativeImage image, int[] argb) {
+    private static void writeInto(NativeImage image, int[] argb) {
         int size = FRAME_WIDTH * FRAME_HEIGHT * 4;
-        if (rotated == null) {
-            rotated = new byte[size];
+        if (packed == null) {
+            packed = new byte[size];
         }
         for (int y = 0; y < FRAME_HEIGHT; y++) {
             int row = y * FRAME_WIDTH;
@@ -277,15 +292,15 @@ public final class VeilRitual {
                 int destX = upsideDown ? y : FRAME_HEIGHT - 1 - y;
                 int destY = upsideDown ? FRAME_WIDTH - 1 - x : x;
                 int dest = (destY * FRAME_HEIGHT + destX) * 4;
-                rotated[dest] = (byte) (pixel >> 16);
-                rotated[dest + 1] = (byte) (pixel >> 8);
-                rotated[dest + 2] = (byte) pixel;
-                rotated[dest + 3] = (byte) 255;
+                packed[dest] = (byte) (pixel >> 16);
+                packed[dest + 1] = (byte) (pixel >> 8);
+                packed[dest + 2] = (byte) pixel;
+                packed[dest + 3] = (byte) 255;
             }
         }
         ByteBuffer pixels = image.getPixelBytes();
         pixels.clear();
-        pixels.put(rotated);
+        pixels.put(packed);
     }
 
     private static int[] decode(byte[] jpeg) {

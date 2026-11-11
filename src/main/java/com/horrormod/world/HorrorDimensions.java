@@ -6,7 +6,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
 /**
- * The veil is rows of bridges running one way through the void.
+ * The veil is rows of bridges over a floor at the bottom of the dimension. Some spans are towers.
  */
 public final class HorrorDimensions {
     public static final ResourceKey<Level> VEIL = ResourceKey.create(Registries.DIMENSION, HorrorMod.id("veil"));

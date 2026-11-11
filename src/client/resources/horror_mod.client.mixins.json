@@ -20,6 +20,8 @@
     "SoundMuteMixin",
     "VeilHeldItemMixin",
     "VeilItemMixin",
+    "DisappearanceItemMixin",
+    "SpecialModelRenderersMixin",
     "GlitchPitchMixin",
     "VeilLoadingMixin",
     "RenderLayerAccessor",

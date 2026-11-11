@@ -35,6 +35,7 @@ public final class HorrorWorld {
             holdDawn(server);
         });
         ServerChunkEvents.CHUNK_LOAD.register(VoidChunks::clear);
+        ServerChunkEvents.CHUNK_LOAD.register(BridgeChunkGenerator::ensureFloor);
     }
 
     private static void warmGeneration(MinecraftServer server) {

@@ -2,33 +2,13 @@
   "type": "minecraft:entity",
   "pools": [
     {
+      "rolls": 1,
       "entries": [
         {
           "type": "minecraft:item",
-          "modifier": [
-            {
-              "type": "minecraft:set_count",
-              "count": {
-                "type": "minecraft:uniform",
-                "max": 2,
-                "min": 0
-              }
-            },
-            {
-              "type": "minecraft:enchanted_count_increase",
-              "count": {
-                "type": "minecraft:uniform",
-                "max": 1.0,
-                "min": 0.0
-              },
-              "enchantment": "minecraft:looting"
-            }
-          ],
-          "name": "minecraft:string"
+          "name": "horror_mod:eye"
         }
-      ],
-      "rolls": 1
+      ]
     }
-  ],
-  "random_sequence": "horror_mod:entities/reverse_spider"
+  ]
 }

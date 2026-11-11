@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "horror_mod:glitch",
+    "horror_mod:null_pointer",
+    "horror_mod:savior",
+    "horror_mod:dissapearance",
+    "horror_mod:eye"
+  ],
+  "result": {
+    "count": 1,
+    "id": "horror_mod:five"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "horror_mod:item/dissapearance",
+    "model": {
+      "type": "horror_mod:dissapearance"
+    }
+  }
+}
