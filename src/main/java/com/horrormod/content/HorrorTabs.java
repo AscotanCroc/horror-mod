@@ -31,7 +31,7 @@ public final class HorrorTabs {
                         output.accept(HorrorEntities.REVERSE_ENDERMAN_SPAWN_EGG);
                         output.accept(HorrorEntities.REVERSE_CREEPER_SPAWN_EGG);
                         output.accept(HorrorEntities.REVERSE_SKELETON_SPAWN_EGG);
-                        output.accept(HorrorEntities.DISSAPEARANCE);
+                        output.accept(HorrorEntities.DISAPPEARANCE);
                         output.accept(HorrorEntities.REVERSE_SPIDER_SPAWN_EGG);
                         output.accept(HorrorEntities.EYE);
                         output.accept(HorrorBlocks.BLACK_COBWEB);

@@ -32,7 +32,7 @@ public class RecipeScreen extends Screen {
             new ItemStack(HorrorEntities.GLITCH),
             new ItemStack(HorrorEntities.NULL_POINTER),
             new ItemStack(HorrorEntities.SAVIOR),
-            new ItemStack(HorrorEntities.DISSAPEARANCE),
+            new ItemStack(HorrorEntities.DISAPPEARANCE),
             new ItemStack(HorrorEntities.EYE)
     );
     private final ItemStack fiveResult = new ItemStack(HorrorEntities.FIVE);

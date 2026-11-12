@@ -122,12 +122,12 @@ public final class HorrorEntities {
             new Item(new Item.Properties().setId(VEIL_KEY))
     );
 
-    public static final ResourceKey<Item> DISSAPEARANCE_KEY = ResourceKey.create(Registries.ITEM, HorrorMod.id("dissapearance"));
+    public static final ResourceKey<Item> DISAPPEARANCE_KEY = ResourceKey.create(Registries.ITEM, HorrorMod.id("disappearance"));
 
-    public static final Item DISSAPEARANCE = Registry.register(
+    public static final Item DISAPPEARANCE = Registry.register(
             BuiltInRegistries.ITEM,
-            DISSAPEARANCE_KEY,
-            new Item(new Item.Properties().setId(DISSAPEARANCE_KEY))
+            DISAPPEARANCE_KEY,
+            new Item(new Item.Properties().setId(DISAPPEARANCE_KEY))
     );
 
     public static final ResourceKey<Item> EYE_KEY = ResourceKey.create(Registries.ITEM, HorrorMod.id("eye"));

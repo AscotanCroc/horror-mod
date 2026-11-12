@@ -22,6 +22,7 @@
     "GeodeFeatureMixin",
     "GlowLichenMixin",
     "LavaSpringMixin",
+    "LevelTickListAccessor",
     "MagmaLakeMixin",
     "PhantomSpawnerMixin",
     "ReverseEndermanParticleMixin",

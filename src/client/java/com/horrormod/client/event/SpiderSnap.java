@@ -22,6 +22,13 @@ public final class SpiderSnap {
         return remaining > 0;
     }
 
+    /**
+     * Three ticks of white, then one tick of the new view, until the cuts stop.
+     */
+    public static boolean flashing() {
+        return remaining > 0 && (remaining & 3) != 0;
+    }
+
     public static void tick(Minecraft minecraft) {
         if (remaining <= 0) {
             return;

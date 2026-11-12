@@ -1,14 +1,14 @@
 package com.horrormod.content;
 
+import com.horrormod.mixin.LevelTickListAccessor;
 import com.horrormod.network.WhiteFlashPayload;
-import com.horrormod.sound.ReverseSpiderSounds;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -16,11 +16,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.ticks.LevelChunkTicks;
 
 /**
  * A cobweb that does not catch anything walking through it.
  * Spider-placed webs flash for a second, sit for the rest of a minute, then flash
- * again and vanish. The second flash starts at the death position and rolls outward.
+ * again and vanish. Breaking one starts that leaving flash at the broken web
+ * and rolls it outward through the cluster.
  */
 public class BlackCobwebBlock extends Block {
     public static final int FLASH_TICKS = 20;
@@ -63,18 +65,27 @@ public class BlackCobwebBlock extends Block {
                         continue;
                     }
                     int wave = wave(center, cursor.immutable());
-                    level.setBlock(cursor, state.setValue(WAVE, wave).setValue(AGE, FLASH_TICKS).setValue(LEAVING, false), 3);
-                    level.scheduleTick(cursor, HorrorBlocks.BLACK_COBWEB, Math.max(1, wave * RIPPLE_TICKS));
+                    BlockPos target = cursor.immutable();
+                    level.setBlock(target, state.setValue(WAVE, wave).setValue(AGE, FLASH_TICKS).setValue(LEAVING, false), 3);
+                    reschedule(level, target, Math.max(1, wave * RIPPLE_TICKS));
                 }
             }
         }
-        RandomSource random = level.getRandom();
-        int copies = 2 + random.nextInt(2);
-        float pitch = 1.9F + random.nextFloat() * 0.7F;
-        for (int copy = 0; copy < copies; copy++) {
-            level.playSound(null, center.getX() + 0.5, center.getY() + 0.5, center.getZ() + 0.5, ReverseSpiderSounds.KILL, SoundSource.MASTER, 2.6F, pitch);
+    }
+
+    /**
+     * A cobweb already has its lifetime tick waiting. A second schedule is ignored,
+     * so the old one has to go before the leaving ripple can start.
+     */
+    @SuppressWarnings("unchecked")
+    private static void reschedule(ServerLevel level, BlockPos pos, int delay) {
+        Object chunkTicks = ((LevelTickListAccessor) (Object) level.getBlockTicks())
+                .horror$allContainers()
+                .get(ChunkPos.pack(pos));
+        if (chunkTicks instanceof LevelChunkTicks<?> ticks) {
+            ((LevelChunkTicks<Block>) ticks).removeIf(tick -> tick.pos().equals(pos) && tick.type() == HorrorBlocks.BLACK_COBWEB);
         }
-        flash(level, center.getX() + 0.5, center.getY() + 0.5, center.getZ() + 0.5);
+        level.scheduleTick(pos, HorrorBlocks.BLACK_COBWEB, delay);
     }
 
     public static void flash(ServerLevel level, double x, double y, double z) {
