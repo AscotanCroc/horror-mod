@@ -32,6 +32,7 @@
     "ReverseZombieEggMixin",
     "SpawnPlacementsInvoker",
     "UndergroundSpawnMixin",
+    "ReverseMobCapMixin",
     "SpawnPlainsBiomeMixin",
     "SpawnPlainsLavaMixin",
     "SpawnPlainsLifeMixin",
@@ -42,6 +43,7 @@
     "VoidTerrainMixin",
     "VoidDecorationMixin",
     "WrongStepMixin",
+    "StepVolumeMixin",
     "ZombiePackMixin"
   ],
   "injectors": {

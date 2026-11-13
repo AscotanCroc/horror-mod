@@ -3,18 +3,6 @@
   "pools": [
     {
       "condition": {
-        "type": "minecraft:killed_by_player"
-      },
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "horror_mod:savior"
-        }
-      ],
-      "rolls": 1
-    },
-    {
-      "condition": {
         "type": "minecraft:entity_properties",
         "entity": "attacker",
         "predicate": {

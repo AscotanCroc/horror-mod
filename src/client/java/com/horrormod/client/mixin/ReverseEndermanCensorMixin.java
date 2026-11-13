@@ -1,6 +1,7 @@
 package com.horrormod.client.mixin;
 
 import com.horrormod.client.render.ReverseEndermanCensor;
+import com.horrormod.client.render.TallCensorBars;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.Hud;
@@ -14,5 +15,6 @@ public class ReverseEndermanCensorMixin {
     @Inject(method = "extractRenderState", at = @At("RETURN"))
     private void horror$censorFace(GuiGraphicsExtractor graphics, DeltaTracker tracker, CallbackInfo callback) {
         ReverseEndermanCensor.render(graphics, tracker.getGameTimeDeltaPartialTick(false));
+        TallCensorBars.render(graphics, tracker.getGameTimeDeltaPartialTick(false));
     }
 }

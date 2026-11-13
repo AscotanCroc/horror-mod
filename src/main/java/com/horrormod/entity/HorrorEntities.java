@@ -304,6 +304,27 @@ public final class HorrorEntities {
                     .build(GLITCH_SQUARE_KEY)
     );
 
+    public static final EntityType<TallCensor> TALL_CENSOR = Registry.register(
+            BuiltInRegistries.ENTITY_TYPE,
+            ResourceKey.create(Registries.ENTITY_TYPE, HorrorMod.id("tall_censor")),
+            EntityType.Builder.of(TallCensor::new, MobCategory.MISC)
+                    .sized(3.0F, 24.0F)
+                    .eyeHeight(22.0F)
+                    .clientTrackingRange(10)
+                    .updateInterval(1)
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, HorrorMod.id("tall_censor")))
+    );
+
+    public static final EntityType<FalsePlayer> FALSE_PLAYER = Registry.register(
+            BuiltInRegistries.ENTITY_TYPE,
+            ResourceKey.create(Registries.ENTITY_TYPE, HorrorMod.id("false_player")),
+            EntityType.Builder.of(FalsePlayer::create, MobCategory.MISC)
+                    .sized(0.6F, 1.8F)
+                    .eyeHeight(1.62F)
+                    .clientTrackingRange(16)
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, HorrorMod.id("false_player")))
+    );
+
     private HorrorEntities() {
     }
 
@@ -316,7 +337,11 @@ public final class HorrorEntities {
     }
 
     public static boolean isReverse(Entity entity) {
-        return reverseMonsters().contains(entity.getType());
+        return isReverseType(entity.getType());
+    }
+
+    public static boolean isReverseType(EntityType<?> type) {
+        return reverseMonsters().contains(type);
     }
 
     public static void initialize() {
@@ -349,6 +374,7 @@ public final class HorrorEntities {
         ReverseMobLifetime.initialize();
         FabricDefaultAttributeRegistry.register(REVERSE_ENDERMAN, Enderman.createAttributes());
         FabricDefaultAttributeRegistry.register(NULL_CLONE, Player.createAttributes());
+        FabricDefaultAttributeRegistry.register(FALSE_PLAYER, Player.createAttributes());
         FabricDefaultAttributeRegistry.register(WATDATMEAN, Watdatmean.createAttributes());
         FabricDefaultAttributeRegistry.register(REVERSE_SKELETON, Skeleton.createAttributes());
         SpawnPlacementsInvoker.horror$register(

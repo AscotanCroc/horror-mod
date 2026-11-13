@@ -44,7 +44,7 @@ public class ReverseSkeleton extends Skeleton {
             BlockPos pos,
             RandomSource random
     ) {
-        return ReverseMonsterSpawns.allow(level, reason, pos, random);
+        return ReverseMonsterSpawns.allow(level, reason, pos, random, type);
     }
 
     @Override
@@ -111,6 +111,12 @@ public class ReverseSkeleton extends Skeleton {
             case HARD -> 2.0F;
             default -> 14.0F;
         };
+    }
+
+    @Override
+    public void die(DamageSource source) {
+        ReverseRewards.queue(this, source);
+        super.die(source);
     }
 
     @Override

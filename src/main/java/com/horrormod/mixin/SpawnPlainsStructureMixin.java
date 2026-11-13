@@ -45,8 +45,15 @@ public class SpawnPlainsStructureMixin {
     ) {
         Identifier id = structure.unwrapKey().map(ResourceKey::identifier).orElse(null);
         if (id != null && HorrorMod.MOD_ID.equals(id.getNamespace()) && id.getPath().equals("obelisk")) {
-            if (level != Level.OVERWORLD
-                    || !chunkPos.equals(ObeliskPlacement.chunk(seed, SpawnPlains.spawnChunk(seed, generator, randomState)))) {
+            if (ObeliskPlacement.isComputing()
+                    || level != Level.OVERWORLD
+                    || !chunkPos.equals(ObeliskPlacement.chunk(
+                            seed,
+                            SpawnPlains.spawnChunk(seed, generator, randomState),
+                            generator,
+                            randomState,
+                            heightAccessor
+                    ))) {
                 callback.setReturnValue(StructureStart.INVALID_START);
             }
             return;

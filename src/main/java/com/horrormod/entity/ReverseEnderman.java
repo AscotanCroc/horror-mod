@@ -1,6 +1,5 @@
 package com.horrormod.entity;
 
-import com.horrormod.content.VeinBlock;
 import com.horrormod.event.HorrorEventActions;
 import com.horrormod.sound.ReverseEndermanSounds;
 import net.minecraft.server.level.ServerLevel;
@@ -22,6 +21,8 @@ import net.minecraft.world.level.ServerLevelAccessor;
  * An enderman whose own sounds are the vanilla ones played backwards.
  */
 public class ReverseEnderman extends Enderman {
+    private boolean vanished;
+
     public ReverseEnderman(EntityType<? extends Enderman> type, Level level) {
         super(type, level);
     }
@@ -62,7 +63,7 @@ public class ReverseEnderman extends Enderman {
             BlockPos pos,
             RandomSource random
     ) {
-        return ReverseMonsterSpawns.allow(level, reason, pos, random);
+        return ReverseMonsterSpawns.allow(level, reason, pos, random, type);
     }
 
     @Override
@@ -81,10 +82,15 @@ public class ReverseEnderman extends Enderman {
 
     @Override
     public void die(DamageSource source) {
-        if (this.level() instanceof ServerLevel server) {
-            VeinBlock.scar(server, this.blockPosition());
+        if (this.vanished || this.isRemoved()) {
+            return;
         }
-        super.die(source);
+        this.vanished = true;
+        if (this.level() instanceof ServerLevel server) {
+            HorrorEventActions.flickerIfSeen(server, this);
+            ReverseRewards.queue(this, source);
+        }
+        this.discard();
     }
 
     @Override

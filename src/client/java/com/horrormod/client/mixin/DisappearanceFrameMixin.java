@@ -29,11 +29,11 @@ public abstract class DisappearanceFrameMixin {
     abstract void horror$dirty(boolean dirty);
 
     @Accessor("animationInfo")
-    abstract Object horror$info();
+    abstract SpriteContents.AnimatedTexture horror$info();
 
     @Inject(method = "tick", at = @At("RETURN"))
     private void horror$matchShot(CallbackInfo callback) {
-        SpriteContents contents = ((DisappearanceTextureAccessor) horror$info()).horror$contents();
+        SpriteContents contents = ((DisappearanceTextureAccessor) (Object) horror$info()).horror$contents();
         if (!HorrorMod.id("item/disappearance").equals(contents.name())) {
             return;
         }

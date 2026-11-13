@@ -25,14 +25,14 @@ import net.minecraft.world.level.levelgen.Heightmap;
  */
 public final class ReverseZombieNights {
     private static final int ATTEMPTS = 12;
-    /** A little under the old coin flip. A thunderstorm brings it back to even odds. */
+    /** A little under the old coin flip. A thunderstorm makes the attempt more likely. */
     private static final float NIGHT_CHANCE = 0.4F;
-    private static final float STORM_NIGHT_CHANCE = 0.5F;
+    private static final float STORM_NIGHT_CHANCE = 0.6F;
     /**
      * Applied once, only if the night was already skipped, so a storm that arrives later
      * lands on the storm chance instead of stacking a second roll.
      */
-    private static final float STORM_CATCHUP = 1.0F / 6.0F;
+    private static final float STORM_CATCHUP = 0.25F;
     private final Map<UUID, NightProgress> spawnedNight = new HashMap<>();
 
     private ReverseZombieNights() {
@@ -69,7 +69,6 @@ public final class ReverseZombieNights {
                 progress.stormCounted = ReverseMonsterSpawns.storming(level);
                 float chance = progress.stormCounted ? STORM_NIGHT_CHANCE : NIGHT_CHANCE;
                 progress.spawnTonight = level.getRandom().nextFloat() < chance;
-                progress.kind = level.getRandom().nextInt(NightKind.values().length);
             }
             if (!progress.spawnTonight && !progress.stormCounted && ReverseMonsterSpawns.storming(level)) {
                 progress.stormCounted = true;
@@ -78,8 +77,11 @@ public final class ReverseZombieNights {
             if (!progress.spawnTonight || progress.spawned || ReverseMonsterSpawns.surfaceOccupied(level)) {
                 continue;
             }
-            NightKind kind = NightKind.values()[progress.kind];
-            int spawned = fillNight(level, player, 0, 1, kind.type, kind.entityClass, kind.airBlocks);
+            ReverseSpawnOrder.Kind kind = ReverseSpawnOrder.pick(level, level.getRandom());
+            if (kind == null) {
+                continue;
+            }
+            int spawned = fillNight(level, player, 0, 1, kind.type(), kind.entityClass(), kind.airBlocks());
             progress.spawned = spawned > 0;
         }
     }
@@ -155,29 +157,10 @@ public final class ReverseZombieNights {
         return true;
     }
 
-    private enum NightKind {
-        ZOMBIE(HorrorEntities.REVERSE_ZOMBIE, ReverseZombie.class, 2),
-        ENDERMAN(HorrorEntities.REVERSE_ENDERMAN, ReverseEnderman.class, 3),
-        CREEPER(HorrorEntities.REVERSE_CREEPER, ReverseCreeper.class, 2),
-        SKELETON(HorrorEntities.REVERSE_SKELETON, ReverseSkeleton.class, 2),
-        SPIDER(HorrorEntities.REVERSE_SPIDER, ReverseSpider.class, 1);
-
-        private final EntityType<?> type;
-        private final Class<? extends Entity> entityClass;
-        private final int airBlocks;
-
-        NightKind(EntityType<?> type, Class<? extends Entity> entityClass, int airBlocks) {
-            this.type = type;
-            this.entityClass = entityClass;
-            this.airBlocks = airBlocks;
-        }
-    }
-
     private static final class NightProgress {
         private long nightId = Long.MIN_VALUE;
         private boolean spawnTonight;
         private boolean spawned;
         private boolean stormCounted;
-        private int kind;
     }
 }

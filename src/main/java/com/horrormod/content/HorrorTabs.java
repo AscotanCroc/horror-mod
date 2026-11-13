@@ -35,8 +35,6 @@ public final class HorrorTabs {
                         output.accept(HorrorEntities.REVERSE_SPIDER_SPAWN_EGG);
                         output.accept(HorrorEntities.EYE);
                         output.accept(HorrorBlocks.BLACK_COBWEB);
-                        output.accept(HorrorBlocks.VEIN);
-                        output.accept(HorrorBlocks.ROT);
                         output.accept(HorrorEntities.SAVIOR);
                         output.accept(HorrorEntities.FIVE);
                         output.accept(HorrorEntities.VEIL);

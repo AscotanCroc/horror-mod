@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -25,12 +26,12 @@ public final class ReverseMonsterSpawns {
     private static final int DEEP_Y = -16;
     /** A little rarer than the previous surface roll. Same number for every reverse monster. */
     private static final int SURFACE_CHANCE = 56;
-    /** A thunderstorm makes the surface roll a little more common. */
-    private static final int STORM_SURFACE_CHANCE = 48;
+    /** A thunderstorm makes the surface roll more common than a clear night. */
+    private static final int STORM_SURFACE_CHANCE = 40;
     /** A little rarer than the previous deep roll. Same number for every reverse monster. */
     private static final int DEEP_CHANCE = 10;
-    /** A thunderstorm makes the deep roll a little more common. */
-    private static final int STORM_DEEP_CHANCE = 8;
+    /** A thunderstorm makes the deep roll more common than clear weather. */
+    private static final int STORM_DEEP_CHANCE = 6;
 
     private ReverseMonsterSpawns() {
     }
@@ -66,11 +67,20 @@ public final class ReverseMonsterSpawns {
         return false;
     }
 
-    public static boolean allow(ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
+    public static boolean allow(
+            ServerLevelAccessor level,
+            EntitySpawnReason reason,
+            BlockPos pos,
+            RandomSource random,
+            EntityType<?> type
+    ) {
         if (reason != EntitySpawnReason.NATURAL && reason != EntitySpawnReason.CHUNK_GENERATION) {
             return true;
         }
         if (!firstNightStarted(level.getLevel()) || ReverseSpawnCooldown.isBlocked(level)) {
+            return false;
+        }
+        if (level.getLevel() instanceof ServerLevel server && !ReverseSpawnOrder.permits(server, type)) {
             return false;
         }
         if (level.getBrightness(LightLayer.BLOCK, pos) > 0) {
@@ -100,6 +110,13 @@ public final class ReverseMonsterSpawns {
      */
     public static boolean surfaceOccupied(ServerLevel level) {
         return occupied(level, true);
+    }
+
+    /**
+     * The dark slot already has its one reverse monster.
+     */
+    public static boolean darkOccupied(ServerLevel level) {
+        return occupied(level, false);
     }
 
     /**

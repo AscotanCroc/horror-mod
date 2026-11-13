@@ -18,8 +18,17 @@ public class ObeliskStructure extends Structure {
 
     @Override
     protected Optional<GenerationStub> findGenerationPoint(GenerationContext context) {
+        if (ObeliskPlacement.isComputing()) {
+            return Optional.empty();
+        }
         ChunkPos spawn = SpawnPlains.spawnChunk(context.seed(), context.chunkGenerator(), context.randomState());
-        ChunkPos target = ObeliskPlacement.chunk(context.seed(), spawn);
+        ChunkPos target = ObeliskPlacement.chunk(
+                context.seed(),
+                spawn,
+                context.chunkGenerator(),
+                context.randomState(),
+                context.heightAccessor()
+        );
         if (!context.chunkPos().equals(target)) {
             return Optional.empty();
         }
@@ -32,7 +41,7 @@ public class ObeliskStructure extends Structure {
     }
 
     /**
-     * Samples a few noise columns around the planned spot. Lower score is a drier, flatter site
+     * Samples the ground around the planned chunk. Lower score is a drier, flatter site
      * whose spawn-facing door opens onto ground at the same height.
      */
     private static BlockPos chooseSite(GenerationContext context, ChunkPos spawn, ChunkPos nominal) {
@@ -41,8 +50,8 @@ public class ObeliskStructure extends Structure {
         BlockPos best = null;
         int bestScore = Integer.MAX_VALUE;
         int search = ObeliskPlacement.SITE_SEARCH_RADIUS;
-        for (int dx = -search; dx <= search; dx += 8) {
-            for (int dz = -search; dz <= search; dz += 8) {
+        for (int dx = -search; dx <= search; dx += 4) {
+            for (int dz = -search; dz <= search; dz += 4) {
                 int x = originX + dx;
                 int z = originZ + dz;
                 int chunkX = Math.floorDiv(x, 16);
@@ -50,15 +59,18 @@ public class ObeliskStructure extends Structure {
                 if (!withinSpawn(spawn, x, z) || SpawnPlains.isSpawnPad(spawn, chunkX, chunkZ)) {
                     continue;
                 }
-                if (!footprintClear(context.seed(), x, z)) {
+                if (!ObeliskPlacement.footprintClear(context.seed(), x, z)) {
                     continue;
                 }
-                int surface = column(context, x, z, Heightmap.Types.WORLD_SURFACE_WG);
-                int floor = column(context, x, z, Heightmap.Types.OCEAN_FLOOR_WG);
-                int score = siteScore(context, x, z, surface, floor, spawn);
+                int score = ObeliskPlacement.score(
+                        (columnX, columnZ, type) -> column(context, columnX, columnZ, type),
+                        x,
+                        z,
+                        spawn
+                );
                 if (score < bestScore) {
                     bestScore = score;
-                    best = new BlockPos(x, surface, z);
+                    best = new BlockPos(x, column(context, x, z, Heightmap.Types.WORLD_SURFACE_WG), z);
                 }
             }
         }
@@ -68,56 +80,6 @@ public class ObeliskStructure extends Structure {
         int x = originX;
         int z = originZ;
         return new BlockPos(x, column(context, x, z, Heightmap.Types.WORLD_SURFACE_WG), z);
-    }
-
-    private static int siteScore(GenerationContext context, int x, int z, int surface, int floor, ChunkPos spawn) {
-        int score = 0;
-        if (surface > floor) {
-            score += 500;
-        }
-        int lowest = surface;
-        int highest = surface;
-        for (int[] offset : FOOTPRINT) {
-            int sample = column(context, x + offset[0], z + offset[1], Heightmap.Types.WORLD_SURFACE_WG);
-            int sampleFloor = column(context, x + offset[0], z + offset[1], Heightmap.Types.OCEAN_FLOOR_WG);
-            if (sample > sampleFloor) {
-                score += 80;
-            }
-            lowest = Math.min(lowest, sample);
-            highest = Math.max(highest, sample);
-        }
-        score += (highest - lowest) * 12;
-        Direction facing = facingSpawn(x, z, spawn);
-        int doorX = x + facing.getStepX() * 5;
-        int doorZ = z + facing.getStepZ() * 5;
-        int outside = column(context, doorX, doorZ, Heightmap.Types.WORLD_SURFACE_WG);
-        int outsideFloor = column(context, doorX, doorZ, Heightmap.Types.OCEAN_FLOOR_WG);
-        if (outside > outsideFloor) {
-            score += 200;
-        }
-        if (outside > surface) {
-            score += (outside - surface) * 20;
-        } else if (outside < surface - 1) {
-            score += (surface - 1 - outside) * 6;
-        }
-        return score;
-    }
-
-    /** The whole 9-wide course, not only the center column. */
-    private static boolean footprintClear(long seed, int x, int z) {
-        int radius = ObeliskPiece.HALF_WIDTH;
-        int minX = Math.floorDiv(x - radius, 16);
-        int maxX = Math.floorDiv(x + radius, 16);
-        int minZ = Math.floorDiv(z - radius, 16);
-        int maxZ = Math.floorDiv(z + radius, 16);
-        for (int chunkX = minX; chunkX <= maxX; chunkX++) {
-            for (int chunkZ = minZ; chunkZ <= maxZ; chunkZ++) {
-                if (VoidChunks.isBaseVoid(seed, chunkX, chunkZ)) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     private static int column(GenerationContext context, int x, int z, Heightmap.Types type) {
@@ -137,20 +99,8 @@ public class ObeliskStructure extends Structure {
         return dx * dx + dz * dz <= limit * limit;
     }
 
-    private static final int[][] FOOTPRINT = {
-            {4, 0},
-            {-4, 0},
-            {0, 4},
-            {0, -4}
-    };
-
     private static Direction facingSpawn(int x, int z, ChunkPos spawn) {
-        int dx = spawn.getMiddleBlockX() - x;
-        int dz = spawn.getMiddleBlockZ() - z;
-        if (Math.abs(dx) >= Math.abs(dz)) {
-            return dx >= 0 ? Direction.EAST : Direction.WEST;
-        }
-        return dz >= 0 ? Direction.SOUTH : Direction.NORTH;
+        return ObeliskPlacement.facingSpawn(x, z, spawn);
     }
 
     @Override

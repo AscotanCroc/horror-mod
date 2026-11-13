@@ -4,7 +4,7 @@ import net.minecraft.client.renderer.texture.SpriteContents;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(targets = "net.minecraft.client.renderer.texture.SpriteContents$AnimatedTexture")
+@Mixin(SpriteContents.AnimatedTexture.class)
 public interface DisappearanceTextureAccessor {
     @Accessor("this$0")
     SpriteContents horror$contents();

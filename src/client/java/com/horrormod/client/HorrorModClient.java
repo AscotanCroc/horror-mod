@@ -1,6 +1,7 @@
 package com.horrormod.client;
 
 import com.horrormod.HorrorMod;
+import com.horrormod.client.entity.ClientFalsePlayer;
 import com.horrormod.client.entity.ClientNullClone;
 import com.horrormod.client.event.HorrorClientEffects;
 import com.horrormod.client.event.SpiderSnap;
@@ -11,10 +12,13 @@ import com.horrormod.client.particle.GlitchSquareParticle;
 import com.horrormod.entity.HorrorParticles;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry;
 import com.horrormod.client.event.VeilRitual;
+import com.horrormod.client.render.EmptyEntityRenderer;
+import com.horrormod.client.render.FalsePlayerRenderers;
 import com.horrormod.client.render.NullCloneRenderers;
 import com.horrormod.client.render.VeilItemPipeline;
 import com.horrormod.client.render.VeilLecternRender;
 import com.horrormod.client.render.ReverseEndermanRenderer;
+import com.horrormod.entity.FalsePlayer;
 import com.horrormod.entity.NullClone;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import com.horrormod.client.render.GlitchSquareRenderer;
@@ -60,6 +64,9 @@ public final class HorrorModClient implements ClientModInitializer {
         EntityRendererRegistry.register(HorrorEntities.REVERSE_CREEPER, ReverseCreeperRenderer::new);
         NullClone.clientFactory = ClientNullClone::new;
         EntityRendererRegistry.register(HorrorEntities.NULL_CLONE, NullCloneRenderers::create);
+        FalsePlayer.clientFactory = ClientFalsePlayer::new;
+        EntityRendererRegistry.register(HorrorEntities.FALSE_PLAYER, FalsePlayerRenderers::create);
+        EntityRendererRegistry.register(HorrorEntities.TALL_CENSOR, EmptyEntityRenderer::new);
         EntityRendererRegistry.register(HorrorEntities.THROWN_NULL_POINTER, ThrownItemRenderer::new);
         ModelLayerRegistry.registerModelLayer(WatdatmeanModel.LAYER_LOCATION, WatdatmeanModel::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(ReverseSkeletonModel.LAYER_LOCATION, ReverseSkeletonModel::createBodyLayer);
