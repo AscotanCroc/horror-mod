@@ -87,6 +87,7 @@ public class ReverseEnderman extends Enderman {
         }
         this.vanished = true;
         if (this.level() instanceof ServerLevel server) {
+            ReverseSpawnCooldown.markKilled(server);
             HorrorEventActions.flickerIfSeen(server, this);
             ReverseRewards.queue(this, source);
         }
@@ -96,6 +97,30 @@ public class ReverseEnderman extends Enderman {
     @Override
     public void playSound(SoundEvent sound, float volume, float pitch) {
         super.playSound(sound, volume * 2.8F, Math.min(2.3F, pitch * 1.65F));
+    }
+
+    @Override
+    public void makeSound(SoundEvent sound) {
+        if (this.isDeadOrDying() || this.vanished) {
+            return;
+        }
+        super.makeSound(sound);
+    }
+
+    @Override
+    public void handleDamageEvent(DamageSource source) {
+        if (this.isDeadOrDying() || this.getHealth() <= 0.0F || this.vanished) {
+            return;
+        }
+        super.handleDamageEvent(source);
+    }
+
+    @Override
+    public void handleEntityEvent(byte id) {
+        if (id == 3) {
+            return;
+        }
+        super.handleEntityEvent(id);
     }
 
     @Override

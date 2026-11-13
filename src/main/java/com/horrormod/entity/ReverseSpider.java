@@ -92,6 +92,9 @@ public class ReverseSpider extends Spider {
             return;
         }
         this.burst = true;
+        if (this.level() instanceof ServerLevel killed) {
+            ReverseSpawnCooldown.markKilled(killed);
+        }
         ReverseRewards.queue(this, source);
         if (this.level() instanceof ServerLevel level) {
             spread(level);

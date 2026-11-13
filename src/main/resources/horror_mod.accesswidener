@@ -1,3 +1,6 @@
 accessWidener	v2	official
 
 accessible	class	net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture
+accessible	method	net/minecraft/client/renderer/RenderPipelines	register	(Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;)Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;
+accessible	method	net/minecraft/client/renderer/RenderPipelines	register	(Lnet/minecraft/client/renderer/oit/OitPipelineSet;)Lnet/minecraft/client/renderer/oit/OitPipelineSet;
+accessible	method	net/minecraft/client/renderer/rendertype/RenderType	create	(Ljava/lang/String;Lnet/minecraft/client/renderer/rendertype/RenderSetup;)Lnet/minecraft/client/renderer/rendertype/RenderType;

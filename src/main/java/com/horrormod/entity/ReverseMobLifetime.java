@@ -15,19 +15,20 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * A reverse monster gives its slot back after six minutes off screen and without a target.
+ * A reverse monster gives its slot back after two minutes off screen and without a target.
  * Being seen or aggroed starts that wait over.
  */
 public final class ReverseMobLifetime {
-    private static final long QUIET_TICKS = 20L * 60L * 6L;
+    private static final long QUIET_TICKS = 20L * 60L * 2L;
+    private static ReverseMobLifetime active;
     private final Map<UUID, Long> lastEngaged = new HashMap<>();
 
     private ReverseMobLifetime() {
     }
 
     public static void initialize() {
-        ReverseMobLifetime lifetime = new ReverseMobLifetime();
-        ServerTickEvents.END_LEVEL_TICK.register(lifetime::tick);
+        active = new ReverseMobLifetime();
+        ServerTickEvents.END_LEVEL_TICK.register(active::tick);
     }
 
     private void tick(ServerLevel level) {

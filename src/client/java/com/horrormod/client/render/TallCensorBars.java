@@ -73,7 +73,6 @@ public final class TallCensorBars {
         if (!anyClear(minecraft, camera, box)) {
             return null;
         }
-        Vec3 center = box.getCenter();
         float minX = Float.POSITIVE_INFINITY;
         float minY = Float.POSITIVE_INFINITY;
         float maxX = Float.NEGATIVE_INFINITY;
@@ -85,7 +84,6 @@ public final class TallCensorBars {
                     (corner & 2) == 0 ? box.minY : box.maxY,
                     (corner & 4) == 0 ? box.minZ : box.maxZ
             );
-            point = inFront(point, center, camera, forward);
             if (forward.dot(toVector(point.subtract(camera))) <= 0.05F) {
                 continue;
             }
@@ -117,19 +115,6 @@ public final class TallCensorBars {
         return false;
     }
 
-    private static Vec3 inFront(Vec3 point, Vec3 center, Vec3 camera, Vector3f forward) {
-        float pointDot = forward.dot(toVector(point.subtract(camera)));
-        if (pointDot > 0.05F) {
-            return point;
-        }
-        float centerDot = forward.dot(toVector(center.subtract(camera)));
-        if (centerDot <= 0.05F) {
-            return point;
-        }
-        double t = (0.05F - pointDot) / (centerDot - pointDot);
-        return point.add(center.subtract(point).scale(t));
-    }
-
     private static Vector3f toVector(Vec3 vec) {
         return new Vector3f((float) vec.x, (float) vec.y, (float) vec.z);
     }
@@ -145,8 +130,8 @@ public final class TallCensorBars {
         private Rect padded() {
             float width = this.right - this.left;
             float height = this.bottom - this.top;
-            float padX = Math.max(10.0F, width * 0.55F);
-            float padY = Math.max(6.0F, height * 0.40F);
+            float padX = Math.min(28.0F, Math.max(8.0F, width * 0.12F));
+            float padY = Math.min(20.0F, Math.max(6.0F, height * 0.08F));
             return new Rect(this.left - padX, this.top - padY, this.right + padX, this.bottom + padY);
         }
     }

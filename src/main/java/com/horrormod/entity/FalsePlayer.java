@@ -13,9 +13,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Avatar;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -33,7 +36,10 @@ public class FalsePlayer extends Avatar {
     public static final double REMOVE_DISTANCE = 15.0;
     private static final double SCREEN_DOT = Math.cos(Math.toRadians(50.0));
     private static final double NEAR_DOT = Math.cos(Math.toRadians(58.0));
-    private static final double LOST_DOT = Math.cos(Math.toRadians(66.0));
+    /** Corner of a 110-degree view, so the copy stays through the edge of the screen. */
+    private static final double OFF_SCREEN_DOT = Math.cos(Math.toRadians(75.0));
+    private static final double BODY_HALF_WIDTH = 0.5;
+    private static final double[] BODY_HEIGHTS = {0.3, 0.9, 1.4, 1.8};
 
     protected static final EntityDataAccessor<ResolvableProfile> DATA_PROFILE = SynchedEntityData.defineId(
             FalsePlayer.class,
@@ -50,6 +56,15 @@ public class FalsePlayer extends Avatar {
 
     public FalsePlayer(EntityType<? extends FalsePlayer> type, Level level) {
         super(type, level);
+        AttributeInstance transmit = this.getAttribute(Attributes.WAYPOINT_TRANSMIT_RANGE);
+        if (transmit != null) {
+            transmit.setBaseValue(0.0);
+        }
+    }
+
+    @Override
+    public boolean isTransmittingWaypoint() {
+        return false;
     }
 
     public static FalsePlayer create(EntityType<FalsePlayer> type, Level level) {
@@ -92,9 +107,9 @@ public class FalsePlayer extends Avatar {
 
     private static BlockPos findSpot(ServerLevel level, ServerPlayer player) {
         int limit = tickBlocks(level);
-        int far = limit - 12;
-        int near = Math.max(48, (int) (limit * 0.62));
-        if (far < near + 8) {
+        int far = Math.min(56, limit - 20);
+        int near = Math.min(32, far - 12);
+        if (near < 24 || far < near + 8) {
             return null;
         }
         var random = level.getRandom();
@@ -174,6 +189,9 @@ public class FalsePlayer extends Avatar {
                 this.discard();
                 return;
             }
+            if (this.walking) {
+                this.setSpeed(0.18F);
+            }
             this.steer(owner);
             super.aiStep();
             this.faceAway(owner);
@@ -188,36 +206,33 @@ public class FalsePlayer extends Avatar {
             return true;
         }
         double dot = this.bestDot(owner);
-        boolean clear = dot >= -1.0;
+        boolean anyVisible = dot >= -1.0;
         if (!this.walking) {
-            if (clear && dot >= NEAR_DOT) {
+            if (anyVisible && dot >= NEAR_DOT) {
                 this.walking = true;
             }
             return false;
         }
-        if (!clear || dot < LOST_DOT) {
-            return true;
-        }
-        if (dot >= SCREEN_DOT) {
+        if (anyVisible && dot >= SCREEN_DOT) {
             this.seen = true;
         }
-        return this.seen && dot < SCREEN_DOT;
+        // One hidden point is not enough. Every part of the body has to be blocked or off screen.
+        return !anyVisible || (this.seen && dot < OFF_SCREEN_DOT);
     }
 
     /** The strongest look toward any unobstructed point on the body, or below -1 when the body is hidden. */
     private double bestDot(ServerPlayer owner) {
         double best = -2.0;
         Vec3 feet = this.position();
-        Vec3[] points = {
-                feet.add(0.0, 0.4, 0.0),
-                this.getEyePosition(),
-                feet.add(0.0, 1.7, 0.0)
-        };
-        for (Vec3 point : points) {
-            if (!HorrorEventActions.clearLine(owner, point)) {
-                continue;
+        Vec3 side = Entity.calculateViewVector(0.0F, this.getYRot() + 90.0F).scale(BODY_HALF_WIDTH);
+        for (double height : BODY_HEIGHTS) {
+            for (int part = -1; part <= 1; part++) {
+                Vec3 point = feet.add(0.0, height, 0.0).add(side.scale(part));
+                if (!HorrorEventActions.clearLine(owner, point)) {
+                    continue;
+                }
+                best = Math.max(best, HorrorEventActions.lookDot(owner, point));
             }
-            best = Math.max(best, HorrorEventActions.lookDot(owner, point));
         }
         return best;
     }

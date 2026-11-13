@@ -22,6 +22,8 @@ import com.horrormod.entity.FalsePlayer;
 import com.horrormod.entity.NullClone;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import com.horrormod.client.render.GlitchSquareRenderer;
+import com.horrormod.client.render.ReverseMarkerRenderType;
+import com.horrormod.client.render.ReverseMarkerRenderer;
 import com.horrormod.client.render.ReverseCreeperRenderer;
 import com.horrormod.client.render.ReverseSkeletonModel;
 import com.horrormod.client.render.ReverseSkeletonRenderer;
@@ -58,6 +60,7 @@ public final class HorrorModClient implements ClientModInitializer {
                 context.client().execute(WhiteFlash::begin)
         );
         VeilItemPipeline.initialize();
+        ReverseMarkerRenderType.initialize();
         VeilLecternRender.initialize();
         EntityRendererRegistry.register(HorrorEntities.REVERSE_ZOMBIE, ReverseZombieRenderer::new);
         EntityRendererRegistry.register(HorrorEntities.REVERSE_ENDERMAN, ReverseEndermanRenderer::new);
@@ -78,6 +81,7 @@ public final class HorrorModClient implements ClientModInitializer {
             WhiteFlash.tick();
         });
         EntityRendererRegistry.register(HorrorEntities.GLITCH_SQUARE, GlitchSquareRenderer::new);
+        EntityRendererRegistry.register(HorrorEntities.REVERSE_MARKER, ReverseMarkerRenderer::new);
         EntityRendererRegistry.register(HorrorEntities.WATDATMEAN, WatdatmeanRenderer::new);
         ClientPlayNetworking.registerGlobalReceiver(OpenRecipePayload.TYPE, (payload, context) ->
                 context.client().execute(() -> context.client().setScreenAndShow(new RecipeScreen()))

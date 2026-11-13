@@ -22,7 +22,8 @@ import net.minecraft.world.phys.Vec3;
  * Once the owner looks at it, it drifts sideways and down until the body is occluded.
  */
 public class TallCensor extends Entity {
-    private static final double BEHIND = 5.0;
+    /** Far enough back that the 24-block column reads as a shape, not a wall on the camera. */
+    private static final double BEHIND = 20.0;
     private static final double LIFT = 6.0;
     private static final double SPEED = 0.2;
     private static final double SINK = 0.075;

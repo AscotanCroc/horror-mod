@@ -45,7 +45,8 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.block.state.properties.StairsShape;
 
 /**
- * Block rewrite for a reverse creeper blast. Rolls are per block inside a 16-block sphere.
+ * Block rewrite for a reverse creeper blast. Rolls are per block inside a 16-block sphere,
+ * and each one thins out with distance from the creeper.
  */
 public final class ReverseCreeperBurst {
     static final double RADIUS = 16.0;
@@ -145,7 +146,7 @@ public final class ReverseCreeperBurst {
             if (state.isAir() || natural(state)) {
                 continue;
             }
-            if (random.nextBoolean()) {
+            if (occurs(random, 0.5F, pos, x, y, z)) {
                 BlockState replacement = random.nextFloat() < 0.15F
                         ? Blocks.COBWEB.defaultBlockState()
                         : Blocks.AIR.defaultBlockState();
@@ -160,13 +161,13 @@ public final class ReverseCreeperBurst {
         for (BlockPos pos : area) {
             BlockState state = level.getBlockState(pos);
             if (!removed.contains(pos) && !natural(state)) {
-                weather(level, pos, random, index);
+                weather(level, pos, random, index, x, y, z);
             }
         }
 
         List<BlockPos> formed = new ArrayList<>();
         for (BlockPos pos : kept) {
-            if (random.nextFloat() >= 0.25F) {
+            if (!occurs(random, 0.25F, pos, x, y, z)) {
                 continue;
             }
             BlockState state = level.getBlockState(pos);
@@ -179,12 +180,12 @@ public final class ReverseCreeperBurst {
             formed.add(pos);
         }
 
-        Set<BlockPos> water = placeWater(level, grass, random, index);
+        Set<BlockPos> water = placeWater(level, grass, random, index, x, y, z);
         for (BlockPos pos : grass) {
             if (water.contains(pos) || !level.getBlockState(pos).is(Blocks.GRASS_BLOCK)) {
                 continue;
             }
-            if (random.nextFloat() >= 0.15F) {
+            if (!occurs(random, 0.15F, pos, x, y, z)) {
                 continue;
             }
             clearPlant(level, pos.above(), index);
@@ -202,6 +203,9 @@ public final class ReverseCreeperBurst {
             if (!level.isInWorldBounds(above) || !level.isLoaded(above) || !plantSpace(level, above)) {
                 continue;
             }
+            if (!occurs(random, 1.0F, pos, x, y, z)) {
+                continue;
+            }
             float roll = random.nextFloat();
             if (roll < 0.60F) {
                 clearPlant(level, above, index);
@@ -216,7 +220,7 @@ public final class ReverseCreeperBurst {
             }
         }
 
-        waterlog(level, formed, random);
+        waterlog(level, formed, random, x, y, z);
         placeVines(level, area, planted, formed, random, x, y, z);
         growPlants(level, x, y, z, random);
     }
@@ -238,7 +242,9 @@ public final class ReverseCreeperBurst {
             }
         }
         for (BlockPos pos : plants) {
-            grow(level, pos, random);
+            if (occurs(random, 1.0F, pos, x, y, z)) {
+                grow(level, pos, random);
+            }
         }
     }
 
@@ -331,14 +337,14 @@ public final class ReverseCreeperBurst {
     /**
      * Mossy or cracked forms are chosen before a block is cut into a slab or stair, so the new shape keeps that variant.
      */
-    private static void weather(ServerLevel level, BlockPos pos, RandomSource random, PlayerPlacedBlocks index) {
+    private static void weather(ServerLevel level, BlockPos pos, RandomSource random, PlayerPlacedBlocks index, double x, double y, double z) {
         BlockState state = level.getBlockState(pos);
         Identifier id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
         if (id != null && id.getPath().contains("infested")) {
             return;
         }
         List<Block> variants = WEATHERED.get(state.getBlock());
-        if (variants == null || random.nextFloat() >= 0.5F) {
+        if (variants == null || !occurs(random, 0.5F, pos, x, y, z)) {
             return;
         }
         Block variant = variants.get(random.nextInt(variants.size()));
@@ -382,7 +388,7 @@ public final class ReverseCreeperBurst {
         }
         int count = Math.min(6, faces.size());
         for (int i = 0; i < count; i++) {
-            int pick = i + random.nextInt(faces.size() - i);
+            int pick = preferCenter(faces, i, random, x, y, z);
             VineFace face = faces.get(pick);
             faces.set(pick, faces.get(i));
             BlockState occupying = level.getBlockState(face.air());
@@ -391,10 +397,10 @@ public final class ReverseCreeperBurst {
         }
     }
 
-    private static void waterlog(ServerLevel level, List<BlockPos> formed, RandomSource random) {
+    private static void waterlog(ServerLevel level, List<BlockPos> formed, RandomSource random, double x, double y, double z) {
         for (BlockPos pos : formed) {
             BlockState state = level.getBlockState(pos);
-            if (!state.hasProperty(BlockStateProperties.WATERLOGGED) || random.nextFloat() >= 0.33F || !enclosed(level, pos)) {
+            if (!state.hasProperty(BlockStateProperties.WATERLOGGED) || !occurs(random, 0.33F, pos, x, y, z) || !enclosed(level, pos)) {
                 continue;
             }
             set(level, pos, state.setValue(BlockStateProperties.WATERLOGGED, true));
@@ -415,7 +421,7 @@ public final class ReverseCreeperBurst {
         return true;
     }
 
-    private static Set<BlockPos> placeWater(ServerLevel level, List<BlockPos> grass, RandomSource random, PlayerPlacedBlocks index) {
+    private static Set<BlockPos> placeWater(ServerLevel level, List<BlockPos> grass, RandomSource random, PlayerPlacedBlocks index, double x, double y, double z) {
         List<BlockPos> candidates = new ArrayList<>();
         for (BlockPos pos : grass) {
             if (level.getBlockState(pos).is(Blocks.GRASS_BLOCK)) {
@@ -426,7 +432,7 @@ public final class ReverseCreeperBurst {
         if (candidates.isEmpty()) {
             return placed;
         }
-        BlockPos first = candidates.get(random.nextInt(candidates.size()));
+        BlockPos first = preferCenter(candidates, random, x, y, z);
         pour(level, first, index);
         placed.add(first);
         if (!random.nextBoolean()) {
@@ -441,7 +447,7 @@ public final class ReverseCreeperBurst {
         if (separated.isEmpty()) {
             return placed;
         }
-        BlockPos second = separated.get(random.nextInt(separated.size()));
+        BlockPos second = preferCenter(separated, random, x, y, z);
         pour(level, second, index);
         placed.add(second);
         return placed;
@@ -706,6 +712,58 @@ public final class ReverseCreeperBurst {
         double dy = pos.getY() + 0.5 - y;
         double dz = pos.getZ() + 0.5 - z;
         return dx * dx + dy * dy + dz * dz <= RADIUS * RADIUS;
+    }
+
+    /**
+     * 1 beside the creeper, 0 at the edge of the blast. A block halfway out keeps half of its usual chance.
+     */
+    private static float nearness(BlockPos pos, double x, double y, double z) {
+        double dx = pos.getX() + 0.5 - x;
+        double dy = pos.getY() + 0.5 - y;
+        double dz = pos.getZ() + 0.5 - z;
+        double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        float remain = (float) (1.0 - distance / RADIUS);
+        return remain <= 0.0F ? 0.0F : remain;
+    }
+
+    private static boolean occurs(RandomSource random, float rate, BlockPos pos, double x, double y, double z) {
+        return random.nextFloat() < rate * nearness(pos, x, y, z);
+    }
+
+    private static BlockPos preferCenter(List<BlockPos> candidates, RandomSource random, double x, double y, double z) {
+        float total = 0.0F;
+        for (BlockPos pos : candidates) {
+            total += nearness(pos, x, y, z);
+        }
+        if (total <= 0.0F) {
+            return candidates.get(random.nextInt(candidates.size()));
+        }
+        float mark = random.nextFloat() * total;
+        for (BlockPos pos : candidates) {
+            mark -= nearness(pos, x, y, z);
+            if (mark <= 0.0F) {
+                return pos;
+            }
+        }
+        return candidates.get(candidates.size() - 1);
+    }
+
+    private static int preferCenter(List<VineFace> faces, int start, RandomSource random, double x, double y, double z) {
+        float total = 0.0F;
+        for (int i = start; i < faces.size(); i++) {
+            total += nearness(faces.get(i).air(), x, y, z);
+        }
+        if (total <= 0.0F) {
+            return start + random.nextInt(faces.size() - start);
+        }
+        float mark = random.nextFloat() * total;
+        for (int i = start; i < faces.size(); i++) {
+            mark -= nearness(faces.get(i).air(), x, y, z);
+            if (mark <= 0.0F) {
+                return i;
+            }
+        }
+        return faces.size() - 1;
     }
 
     private static boolean touches(BlockPos a, BlockPos b) {

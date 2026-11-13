@@ -12,7 +12,7 @@ import net.minecraft.world.item.Item;
 /**
  * Which reverse monster may appear.
  * Carrying that monster's drop keeps it out. The lock lifts when every drop is being
- * carried, and when a player is carrying the veil. Each allowed kind is an equal pick.
+ * carried, and when a player is carrying five or the veil. Each allowed kind is an equal pick.
  */
 public final class ReverseSpawnOrder {
     private ReverseSpawnOrder() {
@@ -50,7 +50,7 @@ public final class ReverseSpawnOrder {
      * True when the carried drops should no longer keep their monsters out.
      */
     private static boolean itemLockLifted(ServerLevel level) {
-        if (carrying(level, HorrorEntities.VEIL)) {
+        if (carrying(level, HorrorEntities.VEIL) || carrying(level, HorrorEntities.FIVE)) {
             return true;
         }
         for (Kind kind : Kind.values()) {
