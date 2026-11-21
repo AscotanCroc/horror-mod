@@ -1,6 +1,7 @@
 package com.horrormod.client.mixin;
 
 import com.horrormod.HorrorMod;
+import java.lang.reflect.Field;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,6 +16,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(targets = "net.minecraft.client.renderer.texture.SpriteContents$AnimationState")
 public abstract class DisappearanceFrameMixin {
     private static final long NANOS_PER_FRAME = 25_000_000L;
+    private static Field animationInfo;
+    private static boolean lookupFailed;
 
     @Accessor("frame")
     abstract int horror$frame();
@@ -28,12 +31,13 @@ public abstract class DisappearanceFrameMixin {
     @Accessor("isDirty")
     abstract void horror$dirty(boolean dirty);
 
-    @Accessor("animationInfo")
-    abstract Object horror$info();
-
     @Inject(method = "tick", at = @At("RETURN"))
     private void horror$matchShot(CallbackInfo callback) {
-        SpriteContents contents = ((DisappearanceTextureAccessor) horror$info()).horror$contents();
+        Object info = horror$info();
+        if (!(info instanceof DisappearanceTextureAccessor texture)) {
+            return;
+        }
+        SpriteContents contents = texture.horror$contents();
         if (!HorrorMod.id("item/disappearance").equals(contents.name())) {
             return;
         }
@@ -45,5 +49,27 @@ public abstract class DisappearanceFrameMixin {
         horror$frame((int) Math.floorMod(index, count));
         horror$subFrame(0);
         horror$dirty(true);
+    }
+
+    /**
+     * The animation holder is a private inner class, so the accessor cannot name it.
+     * The field is read once and kept.
+     */
+    private Object horror$info() {
+        if (lookupFailed) {
+            return null;
+        }
+        try {
+            Field field = animationInfo;
+            if (field == null) {
+                field = getClass().getDeclaredField("animationInfo");
+                field.setAccessible(true);
+                animationInfo = field;
+            }
+            return field.get(this);
+        } catch (Exception exception) {
+            lookupFailed = true;
+            return null;
+        }
     }
 }

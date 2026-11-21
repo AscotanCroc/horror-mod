@@ -3,6 +3,7 @@
   "package": "com.horrormod.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "AbandonedHouseLootMixin",
     "BabyZombieMixin",
     "BlackoutKnockbackMixin",
     "BlockPlaceMixin",

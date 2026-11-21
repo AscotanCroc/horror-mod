@@ -26,5 +26,8 @@
   "block.horror_mod.rot": "rot",
   "death.attack.passed_away": "%1$s passed away",
   "itemGroup.horror_mod.sample": "Sample",
+  "item.horror_mod.impurity_detector": "Impurity Detector",
+  "item.horror_mod.impurity_sheet": "Impurity Sheet",
+  "screen.horror_mod.impurity_sheet": "Impurity Sheet",
   "screen.horror_mod.stone_lectern": "Recipe"
 }

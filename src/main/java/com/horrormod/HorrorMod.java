@@ -7,7 +7,9 @@ import com.horrormod.entity.HorrorParticles;
 import com.horrormod.event.HorrorEventScheduler;
 import com.horrormod.network.BlackoutPayload;
 import com.horrormod.network.HorrorEffectPayload;
+import com.horrormod.network.ImpuritySignalPayload;
 import com.horrormod.network.InventoryVisiblePayload;
+import com.horrormod.network.OpenImpuritySheetPayload;
 import com.horrormod.network.OpenRecipePayload;
 import com.horrormod.network.SpiderSnapPayload;
 import com.horrormod.network.VeilCutsceneDonePayload;
@@ -53,6 +55,8 @@ public final class HorrorMod implements ModInitializer {
         HorrorParticles.initialize();
         HorrorEntities.initialize();
         PayloadTypeRegistry.clientboundPlay().register(OpenRecipePayload.TYPE, OpenRecipePayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(OpenImpuritySheetPayload.TYPE, OpenImpuritySheetPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ImpuritySignalPayload.TYPE, ImpuritySignalPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(HorrorEffectPayload.TYPE, HorrorEffectPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(BlackoutPayload.TYPE, BlackoutPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(VeilRitualPayload.TYPE, VeilRitualPayload.CODEC);

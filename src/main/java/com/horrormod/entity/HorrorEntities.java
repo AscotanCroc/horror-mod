@@ -16,6 +16,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import com.horrormod.content.EyeItem;
+import com.horrormod.content.ImpuritySheetItem;
 import com.horrormod.content.NullPointerItem;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Enderman;
@@ -145,6 +146,28 @@ public final class HorrorEntities {
             BuiltInRegistries.ITEM,
             FIVE_KEY,
             new Item(new Item.Properties().setId(FIVE_KEY))
+    );
+
+    public static final ResourceKey<Item> IMPURITY_DETECTOR_KEY = ResourceKey.create(
+            Registries.ITEM,
+            HorrorMod.id("impurity_detector")
+    );
+
+    public static final Item IMPURITY_DETECTOR = Registry.register(
+            BuiltInRegistries.ITEM,
+            IMPURITY_DETECTOR_KEY,
+            new Item(new Item.Properties().setId(IMPURITY_DETECTOR_KEY))
+    );
+
+    public static final ResourceKey<Item> IMPURITY_SHEET_KEY = ResourceKey.create(
+            Registries.ITEM,
+            HorrorMod.id("impurity_sheet")
+    );
+
+    public static final Item IMPURITY_SHEET = Registry.register(
+            BuiltInRegistries.ITEM,
+            IMPURITY_SHEET_KEY,
+            new ImpuritySheetItem(new Item.Properties().setId(IMPURITY_SHEET_KEY))
     );
 
     public static final EntityType<NullClone> NULL_CLONE = Registry.register(
@@ -316,7 +339,16 @@ public final class HorrorEntities {
     }
 
     public static boolean isReverse(Entity entity) {
-        return reverseMonsters().contains(entity.getType());
+        return isReverseType(entity.getType());
+    }
+
+    public static boolean isReverseType(EntityType<?> type) {
+        for (EntityType<? extends Mob> reverse : reverseMonsters()) {
+            if (reverse == type) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void initialize() {
@@ -347,6 +379,8 @@ public final class HorrorEntities {
         ReverseCreeperBurst.initialize();
         ReverseZombieNights.initialize();
         ReverseMobLifetime.initialize();
+        ReverseRoster.initialize();
+        ImpurityDetector.initialize();
         FabricDefaultAttributeRegistry.register(REVERSE_ENDERMAN, Enderman.createAttributes());
         FabricDefaultAttributeRegistry.register(NULL_CLONE, Player.createAttributes());
         FabricDefaultAttributeRegistry.register(WATDATMEAN, Watdatmean.createAttributes());

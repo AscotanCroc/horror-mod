@@ -1,7 +1,9 @@
 package com.horrormod.entity;
 
 import com.horrormod.world.VoidChunks;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -24,15 +26,11 @@ import net.minecraft.world.level.levelgen.Heightmap;
  * Ordinary monster spawns rarely reach the surface, because cave mobs fill the cap first.
  */
 public final class ReverseZombieNights {
-    private static final int ATTEMPTS = 12;
-    /** A little under the old coin flip. A thunderstorm brings it back to even odds. */
-    private static final float NIGHT_CHANCE = 0.4F;
-    private static final float STORM_NIGHT_CHANCE = 0.5F;
-    /**
-     * Applied once, only if the night was already skipped, so a storm that arrives later
-     * lands on the storm chance instead of stacking a second roll.
-     */
-    private static final float STORM_CATCHUP = 1.0F / 6.0F;
+    private static final int ATTEMPTS = 24;
+    /** Vertical room around the player, wide enough for a slope to still find ground. */
+    private static final double VERTICAL_ROOM = 16.0;
+    /** Twice the previous nightly chance. A storm does not raise this further. */
+    private static final float NIGHT_CHANCE = 0.8F;
     private final Map<UUID, NightProgress> spawnedNight = new HashMap<>();
 
     private ReverseZombieNights() {
@@ -66,19 +64,15 @@ public final class ReverseZombieNights {
             if (progress.nightId != nightId) {
                 progress.nightId = nightId;
                 progress.spawned = false;
-                progress.stormCounted = ReverseMonsterSpawns.storming(level);
-                float chance = progress.stormCounted ? STORM_NIGHT_CHANCE : NIGHT_CHANCE;
-                progress.spawnTonight = level.getRandom().nextFloat() < chance;
-                progress.kind = level.getRandom().nextInt(NightKind.values().length);
-            }
-            if (!progress.spawnTonight && !progress.stormCounted && ReverseMonsterSpawns.storming(level)) {
-                progress.stormCounted = true;
-                progress.spawnTonight = level.getRandom().nextFloat() < STORM_CATCHUP;
+                progress.spawnTonight = level.getRandom().nextFloat() < NIGHT_CHANCE;
             }
             if (!progress.spawnTonight || progress.spawned || ReverseMonsterSpawns.surfaceOccupied(level)) {
                 continue;
             }
-            NightKind kind = NightKind.values()[progress.kind];
+            NightKind kind = choose(level);
+            if (kind == null) {
+                continue;
+            }
             int spawned = fillNight(level, player, 0, 1, kind.type, kind.entityClass, kind.airBlocks);
             progress.spawned = spawned > 0;
         }
@@ -107,6 +101,19 @@ public final class ReverseZombieNights {
         return spawnNear(level, player, type, airBlocks) ? spawned + 1 : spawned;
     }
 
+    private static NightKind choose(ServerLevel level) {
+        List<NightKind> open = new ArrayList<>();
+        for (NightKind kind : NightKind.values()) {
+            if (ReverseRoster.canSpawn(level, kind.type)) {
+                open.add(kind);
+            }
+        }
+        if (open.isEmpty()) {
+            return null;
+        }
+        return open.get(level.getRandom().nextInt(open.size()));
+    }
+
     private static boolean onSurface(ServerLevel level, ServerPlayer player) {
         int surface = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, player.getBlockX(), player.getBlockZ());
         double above = player.getY() - surface;
@@ -127,7 +134,7 @@ public final class ReverseZombieNights {
                 continue;
             }
             int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-            if (Math.abs(y - player.getY()) > 8.0) {
+            if (Math.abs(y - player.getY()) > VERTICAL_ROOM) {
                 continue;
             }
             BlockPos feet = new BlockPos(x, y, z);
@@ -177,7 +184,5 @@ public final class ReverseZombieNights {
         private long nightId = Long.MIN_VALUE;
         private boolean spawnTonight;
         private boolean spawned;
-        private boolean stormCounted;
-        private int kind;
     }
 }

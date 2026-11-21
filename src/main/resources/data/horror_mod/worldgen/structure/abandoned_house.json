@@ -1,0 +1,6 @@
+{
+  "type": "horror_mod:abandoned_house",
+  "biomes": "#minecraft:is_overworld",
+  "spawn_overrides": {},
+  "step": "underground_structures"
+}

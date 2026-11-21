@@ -3,8 +3,10 @@ package com.horrormod.entity;
 import com.horrormod.event.HorrorEventActions;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.level.ServerLevel;
@@ -12,15 +14,17 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * A reverse monster gives its slot back after six minutes off screen and without a target.
- * Being seen or aggroed starts that wait over.
+ * A reverse mob that has never been seen and never aggroed a player is removed after two minutes.
+ * Either event, once, keeps it and lets that kind spawn again.
  */
 public final class ReverseMobLifetime {
-    private static final long QUIET_TICKS = 20L * 60L * 6L;
-    private final Map<UUID, Long> lastEngaged = new HashMap<>();
+    private static final long UNSEEN_TICKS = 20L * 60L * 2L;
+    private final Map<UUID, Long> appeared = new HashMap<>();
+    private final Set<UUID> met = new HashSet<>();
 
     private ReverseMobLifetime() {
     }
@@ -36,27 +40,37 @@ public final class ReverseMobLifetime {
         }
         long now = level.getGameTime();
         List<Entity> leaving = new ArrayList<>();
+        Set<UUID> alive = new HashSet<>();
         for (Entity entity : level.getAllEntities()) {
             if (!entity.isAlive() || !HorrorEntities.isReverse(entity)) {
                 continue;
             }
+            UUID id = entity.getUUID();
+            alive.add(id);
             if (engaged(level, entity)) {
-                lastEngaged.put(entity.getUUID(), now);
+                if (this.met.add(id)) {
+                    ReverseRoster.noteMet(level);
+                }
                 continue;
             }
-            long since = lastEngaged.computeIfAbsent(entity.getUUID(), id -> now);
-            if (now - since >= QUIET_TICKS) {
+            if (this.met.contains(id)) {
+                continue;
+            }
+            long start = this.appeared.computeIfAbsent(id, ignored -> now);
+            if (now - start >= UNSEEN_TICKS) {
                 leaving.add(entity);
             }
         }
+        this.appeared.keySet().retainAll(alive);
+        this.met.retainAll(alive);
         for (Entity entity : leaving) {
-            lastEngaged.remove(entity.getUUID());
+            this.appeared.remove(entity.getUUID());
             entity.discard();
         }
     }
 
     private static boolean engaged(ServerLevel level, Entity entity) {
-        if (aggroed(entity)) {
+        if (aggroedPlayer(entity)) {
             return true;
         }
         Vec3 eyes = entity instanceof LivingEntity living ? living.getEyePosition() : entity.position();
@@ -69,11 +83,10 @@ public final class ReverseMobLifetime {
         return false;
     }
 
-    private static boolean aggroed(Entity entity) {
+    private static boolean aggroedPlayer(Entity entity) {
         if (!(entity instanceof Mob mob)) {
             return false;
         }
-        LivingEntity target = mob.getTarget();
-        return target != null && target.isAlive();
+        return mob.getTarget() instanceof Player player && player.isAlive();
     }
 }

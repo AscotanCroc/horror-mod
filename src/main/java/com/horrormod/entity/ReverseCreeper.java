@@ -123,7 +123,7 @@ public class ReverseCreeper extends Creeper {
             BlockPos pos,
             RandomSource random
     ) {
-        return ReverseMonsterSpawns.allow(level, reason, pos, random);
+        return ReverseMonsterSpawns.allow(level, reason, pos, random, type);
     }
 
     @Override
@@ -136,6 +136,7 @@ public class ReverseCreeper extends Creeper {
         SpawnGroupData result = super.finalizeSpawn(level, difficulty, reason, data);
         if (reason == EntitySpawnReason.NATURAL || reason == EntitySpawnReason.CHUNK_GENERATION) {
             ReverseSpawnCooldown.mark(level);
+            ReverseRoster.noteSpawn(level, this.getType());
         }
         return result;
     }

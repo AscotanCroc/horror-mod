@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -15,22 +16,16 @@ import net.minecraft.world.level.saveddata.WeatherData;
  * Shared natural-spawn rules for every reverse monster, so each is equally rare.
  */
 public final class ReverseMonsterSpawns {
-    /** Shared by every reverse monster, a little under the previous weight. */
+    /** Shared by every reverse monster. */
     public static final int WEIGHT = 3;
 
     /** Surface reverse monsters can spawn from this time through {@link #SURFACE_NIGHT_END}. */
     public static final int SURFACE_NIGHT_START = 13000;
     public static final int SURFACE_NIGHT_END = 23000;
-    /** Below this Y is the deep underground band. */
-    private static final int DEEP_Y = -16;
-    /** A little rarer than the previous surface roll. Same number for every reverse monster. */
-    private static final int SURFACE_CHANCE = 56;
-    /** A thunderstorm makes the surface roll a little more common. */
-    private static final int STORM_SURFACE_CHANCE = 48;
-    /** A little rarer than the previous deep roll. Same number for every reverse monster. */
-    private static final int DEEP_CHANCE = 10;
-    /** A thunderstorm makes the deep roll a little more common. */
-    private static final int STORM_DEEP_CHANCE = 8;
+    /** Twice the previous surface success rate. Same number for every reverse monster. */
+    private static final int SURFACE_CHANCE = 28;
+    /** Twice the previous underground success rate. A storm uses this number on the surface too. */
+    private static final int DEEP_CHANCE = 5;
 
     private ReverseMonsterSpawns() {
     }
@@ -66,31 +61,38 @@ public final class ReverseMonsterSpawns {
         return false;
     }
 
-    public static boolean allow(ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
+    public static boolean allow(
+            ServerLevelAccessor level,
+            EntitySpawnReason reason,
+            BlockPos pos,
+            RandomSource random,
+            EntityType<?> type
+    ) {
         if (reason != EntitySpawnReason.NATURAL && reason != EntitySpawnReason.CHUNK_GENERATION) {
             return true;
         }
         if (!firstNightStarted(level.getLevel()) || ReverseSpawnCooldown.isBlocked(level)) {
             return false;
         }
+        if (!ReverseRoster.canSpawn(level, type)) {
+            return false;
+        }
         if (level.getBrightness(LightLayer.BLOCK, pos) > 0) {
             return false;
         }
-        boolean storm = storming(level);
-        boolean onSurface = onSurface(level.getLevel(), pos);
-        if (onSurface) {
+        Level world = level.getLevel();
+        if (onSurface(world, pos)) {
             if (occupied(level, true)) {
                 return false;
             }
-            int chance = storm ? STORM_SURFACE_CHANCE : SURFACE_CHANCE;
-            return surfaceNight(level.getLevel()) && random.nextInt(chance) == 0;
+            int chance = storming(level) ? DEEP_CHANCE : SURFACE_CHANCE;
+            return surfaceNight(world) && random.nextInt(chance) == 0;
         }
-        if (pos.getY() <= DEEP_Y) {
+        if (belowSurface(world, pos)) {
             if (occupied(level, false)) {
                 return false;
             }
-            int chance = storm ? STORM_DEEP_CHANCE : DEEP_CHANCE;
-            return random.nextInt(chance) == 0;
+            return random.nextInt(DEEP_CHANCE) == 0;
         }
         return false;
     }
@@ -113,6 +115,12 @@ public final class ReverseMonsterSpawns {
     private static boolean near(Level level, BlockPos pos, Heightmap.Types heightmap) {
         int surface = level.getHeight(heightmap, pos.getX(), pos.getZ());
         return pos.getY() >= surface - 1 && pos.getY() <= surface + 1;
+    }
+
+    /** Any unlit spot under the ground, not only the deepslate band. */
+    private static boolean belowSurface(Level level, BlockPos pos) {
+        int surface = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ());
+        return pos.getY() < surface - 1;
     }
 
     /**
