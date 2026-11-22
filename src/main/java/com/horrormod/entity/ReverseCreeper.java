@@ -98,9 +98,6 @@ public class ReverseCreeper extends Creeper {
 
     @Override
     public void die(DamageSource source) {
-        if (this.level() instanceof ServerLevel server) {
-            ReverseSpawnCooldown.markKilled(server);
-        }
         this.pay(source);
         super.die(source);
     }
@@ -121,7 +118,6 @@ public class ReverseCreeper extends Creeper {
             return;
         }
         this.burst = true;
-        ReverseSpawnCooldown.markKilled(level);
         level.playSound(null, this.getX(), this.getY(), this.getZ(), ReverseCreeperSounds.EXPLODE, SoundSource.HOSTILE, 1.0F, 1.0F);
         ReverseCreeperBurst.apply(level, this);
         ReverseCreeperBlackout.strike(level, this);

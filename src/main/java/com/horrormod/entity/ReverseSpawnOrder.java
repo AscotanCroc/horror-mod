@@ -3,16 +3,14 @@ package com.horrormod.entity;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 
 /**
- * Which reverse monster may appear.
- * Carrying that monster's drop keeps it out. The lock lifts when every drop is being
- * carried, and when a player is carrying five or the veil. Each allowed kind is an equal pick.
+ * Drop and size for each reverse monster.
+ * Which kind may appear is {@link ReverseRoster}.
  */
 public final class ReverseSpawnOrder {
     private ReverseSpawnOrder() {
@@ -35,42 +33,14 @@ public final class ReverseSpawnOrder {
     }
 
     private static List<Kind> candidates(ServerLevel level) {
-        boolean open = itemLockLifted(level);
         List<Kind> eligible = new ArrayList<>();
         for (Kind kind : Kind.values()) {
             if (!ReverseRoster.canSpawn(level, kind.type)) {
                 continue;
             }
-            if (!open && carrying(level, kind.drop)) {
-                continue;
-            }
             eligible.add(kind);
         }
         return eligible;
-    }
-
-    /**
-     * True when the carried drops should no longer keep their monsters out.
-     */
-    private static boolean itemLockLifted(ServerLevel level) {
-        if (carrying(level, HorrorEntities.VEIL) || carrying(level, HorrorEntities.FIVE)) {
-            return true;
-        }
-        for (Kind kind : Kind.values()) {
-            if (!carrying(level, kind.drop)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static boolean carrying(ServerLevel level, Item item) {
-        for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
-            if (player.getInventory().contains(stack -> stack.is(item))) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public enum Kind {

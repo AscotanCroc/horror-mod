@@ -88,7 +88,6 @@ public class ReverseEnderman extends Enderman {
         }
         this.vanished = true;
         if (this.level() instanceof ServerLevel server) {
-            ReverseSpawnCooldown.markKilled(server);
             HorrorEventActions.flickerIfSeen(server, this);
             ReverseRewards.queue(this, source);
         }

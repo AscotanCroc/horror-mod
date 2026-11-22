@@ -33,7 +33,6 @@
     "ReverseZombieEggMixin",
     "SpawnPlacementsInvoker",
     "UndergroundSpawnMixin",
-    "ReverseMobCapMixin",
     "SpawnPlainsBiomeMixin",
     "SpawnPlainsLavaMixin",
     "SpawnPlainsLifeMixin",

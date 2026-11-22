@@ -38,9 +38,6 @@ public class ReverseZombie extends Zombie {
 
     @Override
     public void die(DamageSource source) {
-        if (this.level() instanceof ServerLevel server) {
-            ReverseSpawnCooldown.markKilled(server);
-        }
         if (!diedInSunlight(source)) {
             ReverseRewards.queue(this, source);
         }

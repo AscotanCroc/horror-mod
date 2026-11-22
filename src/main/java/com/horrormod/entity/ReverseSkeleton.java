@@ -116,9 +116,6 @@ public class ReverseSkeleton extends Skeleton {
 
     @Override
     public void die(DamageSource source) {
-        if (this.level() instanceof ServerLevel server) {
-            ReverseSpawnCooldown.markKilled(server);
-        }
         ReverseRewards.queue(this, source);
         super.die(source);
     }

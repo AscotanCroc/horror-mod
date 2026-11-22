@@ -1,33 +1,37 @@
 package com.horrormod.entity;
 
-import com.horrormod.HorrorMod;
 import com.horrormod.world.VoidChunks;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LightLayer;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
- * Places one reverse monster into an empty slot.
- * The roll happens before a kind is chosen, so a locked kind does not make the others rarer.
- * Underground is the common roll. A thunderstorm uses that roll on the surface too.
+ * Puts reverse monsters on the surface near each player during the night.
+ * Ordinary monster spawns rarely reach the surface, because cave mobs fill the cap first.
  */
 public final class ReverseZombieNights {
-    private static final int ATTEMPT_INTERVAL = 200;
-    private static final int ATTEMPTS = 32;
+    private static final int ATTEMPTS = 24;
+    /** Vertical room around the player, wide enough for a slope to still find ground. */
+    private static final double VERTICAL_ROOM = 16.0;
+    /** Twice the previous nightly chance. A storm does not raise this further. */
+    private static final float NIGHT_CHANCE = 0.8F;
+    private final Map<UUID, NightProgress> spawnedNight = new HashMap<>();
 
     private ReverseZombieNights() {
     }
@@ -38,7 +42,7 @@ public final class ReverseZombieNights {
     }
 
     private void tick(ServerLevel level) {
-        if (level.dimension() != Level.OVERWORLD || level.getGameTime() % ATTEMPT_INTERVAL != 0L) {
+        if (level.dimension() != Level.OVERWORLD || level.getGameTime() % 20L != 0L) {
             return;
         }
         if (level.getServer().getWorldData().getDifficulty() == Difficulty.PEACEFUL) {
@@ -47,52 +51,76 @@ public final class ReverseZombieNights {
         if (!level.getGameRules().get(GameRules.SPAWN_MOBS) || !level.getGameRules().get(GameRules.SPAWN_MONSTERS)) {
             return;
         }
-        if (!ReverseMonsterSpawns.firstNightStarted(level) || ReverseSpawnCooldown.isBlocked(level)) {
+        if (!ReverseMonsterSpawns.firstNightStarted(level) || !ReverseMonsterSpawns.surfaceNight(level)) {
             return;
         }
-        RandomSource random = level.getRandom();
-        boolean storm = ReverseMonsterSpawns.storming(level);
-        List<ServerPlayer> underground = new ArrayList<>();
-        List<ServerPlayer> surface = new ArrayList<>();
+        long time = level.getOverworldClockTime();
+        long nightId = Math.floorDiv(time - ReverseMonsterSpawns.SURFACE_NIGHT_START, 24000L);
         for (ServerPlayer player : level.players()) {
-            if (player.isSpectator()) {
+            if (player.isSpectator() || !onSurface(level, player)) {
                 continue;
             }
-            ReverseMonsterSpawns.Band band = ReverseMonsterSpawns.band(level, player.blockPosition());
-            if (band == ReverseMonsterSpawns.Band.UNDERGROUND) {
-                underground.add(player);
-            } else if (band == ReverseMonsterSpawns.Band.SURFACE) {
-                surface.add(player);
+            NightProgress progress = spawnedNight.computeIfAbsent(player.getUUID(), id -> new NightProgress());
+            if (progress.nightId != nightId) {
+                progress.nightId = nightId;
+                progress.spawned = false;
+                progress.spawnTonight = level.getRandom().nextFloat() < NIGHT_CHANCE;
+            }
+            if (!progress.spawnTonight || progress.spawned || ReverseMonsterSpawns.surfaceOccupied(level)) {
+                continue;
+            }
+            NightKind kind = choose(level);
+            if (kind == null) {
+                continue;
+            }
+            int spawned = fillNight(level, player, 0, 1, kind.type, kind.entityClass, kind.airBlocks);
+            progress.spawned = spawned > 0;
+        }
+    }
+
+    private static int fillNight(
+            ServerLevel level,
+            ServerPlayer player,
+            int spawned,
+            int wanted,
+            EntityType<?> type,
+            Class<? extends Entity> kind,
+            int airBlocks
+    ) {
+        if (spawned >= wanted || ReverseSpawnCooldown.isBlocked(level)) {
+            return spawned;
+        }
+        int nearby = level.getEntities(
+                EntityTypeTest.forClass(kind),
+                player.getBoundingBox().inflate(40.0, 12.0, 40.0),
+                entity -> true
+        ).size();
+        if (nearby >= wanted) {
+            return wanted;
+        }
+        return spawnNear(level, player, type, airBlocks) ? spawned + 1 : spawned;
+    }
+
+    private static NightKind choose(ServerLevel level) {
+        List<NightKind> open = new ArrayList<>();
+        for (NightKind kind : NightKind.values()) {
+            if (ReverseRoster.canSpawn(level, kind.type)) {
+                open.add(kind);
             }
         }
-        boolean placeUnderground = !underground.isEmpty()
-                && !ReverseMonsterSpawns.darkOccupied(level)
-                && random.nextInt(ReverseMonsterSpawns.UNDERGROUND_CHANCE) == 0;
-        boolean placeSurface = ReverseMonsterSpawns.surfaceNight(level)
-                && !surface.isEmpty()
-                && !ReverseMonsterSpawns.surfaceOccupied(level)
-                && random.nextInt(ReverseMonsterSpawns.appearanceChance(true, storm)) == 0;
-        if (placeUnderground) {
-            place(level, underground.get(random.nextInt(underground.size())), false);
+        if (open.isEmpty()) {
+            return null;
         }
-        if (placeSurface) {
-            place(level, surface.get(random.nextInt(surface.size())), true);
-        }
+        return open.get(level.getRandom().nextInt(open.size()));
     }
 
-    private static void place(ServerLevel level, ServerPlayer player, boolean surface) {
-        ReverseSpawnOrder.Kind kind = ReverseSpawnOrder.pick(level, level.getRandom());
-        if (kind == null) {
-            return;
-        }
-        if (surface) {
-            spawnOnSurface(level, player, kind.type(), kind.airBlocks());
-        } else {
-            spawnUnderground(level, player, kind.type(), kind.airBlocks());
-        }
+    private static boolean onSurface(ServerLevel level, ServerPlayer player) {
+        int surface = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, player.getBlockX(), player.getBlockZ());
+        double above = player.getY() - surface;
+        return above >= -6.0 && above <= 12.0;
     }
 
-    private static boolean spawnOnSurface(ServerLevel level, ServerPlayer player, EntityType<?> type, int airBlocks) {
+    private static boolean spawnNear(ServerLevel level, ServerPlayer player, EntityType<?> type, int airBlocks) {
         RandomSource random = level.getRandom();
         for (int attempt = 0; attempt < ATTEMPTS; attempt++) {
             double angle = random.nextDouble() * (Math.PI * 2.0);
@@ -106,74 +134,55 @@ public final class ReverseZombieNights {
                 continue;
             }
             int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+            if (Math.abs(y - player.getY()) > VERTICAL_ROOM) {
+                continue;
+            }
             BlockPos feet = new BlockPos(x, y, z);
-            if (ReverseMonsterSpawns.band(level, feet) != ReverseMonsterSpawns.Band.SURFACE) {
+            BlockPos ground = feet.below();
+            if (!hasRoom(level, feet, airBlocks)) {
                 continue;
             }
-            if (!openDarkGround(level, feet, airBlocks)) {
+            if (!level.getFluidState(feet).isEmpty() || !level.getBlockState(ground).getFluidState().isEmpty()) {
                 continue;
             }
-            return spawned(level, type, feet);
+            if (!level.getBlockState(ground).isFaceSturdy(level, ground, Direction.UP)) {
+                continue;
+            }
+            return type.spawn(level, feet, EntitySpawnReason.NATURAL) != null;
         }
         return false;
     }
 
-    private static boolean spawnUnderground(ServerLevel level, ServerPlayer player, EntityType<?> type, int airBlocks) {
-        RandomSource random = level.getRandom();
-        BlockPos origin = player.blockPosition();
-        for (int attempt = 0; attempt < ATTEMPTS; attempt++) {
-            double angle = random.nextDouble() * (Math.PI * 2.0);
-            int distance = 16 + random.nextInt(13);
-            int x = origin.getX() + (int) Math.round(Math.cos(angle) * distance);
-            int z = origin.getZ() + (int) Math.round(Math.sin(angle) * distance);
-            int y = origin.getY() + random.nextInt(25) - 12;
-            BlockPos feet = new BlockPos(x, y, z);
-            if (!level.isLoaded(feet) || VoidChunks.isRemoved(level, x >> 4, z >> 4)) {
-                continue;
-            }
-            if (ReverseMonsterSpawns.band(level, feet) != ReverseMonsterSpawns.Band.UNDERGROUND) {
-                continue;
-            }
-            if (!openDarkGround(level, feet, airBlocks)) {
-                continue;
-            }
-            return spawned(level, type, feet);
-        }
-        return false;
-    }
-
-    /**
-     * An event spawn is not a biome roll, so the natural placement rule is not consulted.
-     */
-    private static boolean spawned(ServerLevel level, EntityType<?> type, BlockPos feet) {
-        if (type.spawn(level, feet, EntitySpawnReason.EVENT) == null) {
-            return false;
-        }
-        ReverseRoster.noteSpawn(level, type);
-        HorrorMod.LOGGER.info("Spawned {} at {}", type, feet.toShortString());
-        return true;
-    }
-
-    private static boolean openDarkGround(ServerLevel level, BlockPos feet, int airBlocks) {
-        if (level.getBrightness(LightLayer.BLOCK, feet) > 0) {
-            return false;
-        }
-        BlockPos ground = feet.below();
-        if (!level.getFluidState(feet).isEmpty() || !level.getBlockState(ground).getFluidState().isEmpty()) {
-            return false;
-        }
-        if (!level.getBlockState(ground).isFaceSturdy(level, ground, Direction.UP)) {
-            return false;
-        }
+    private static boolean hasRoom(ServerLevel level, BlockPos feet, int airBlocks) {
         for (int offset = 0; offset < airBlocks; offset++) {
-            BlockState state = level.getBlockState(feet.above(offset));
-            if (!state.getFluidState().isEmpty()) {
-                return false;
-            }
-            if (!state.isAir() && !state.is(BlockTags.REPLACEABLE)) {
+            if (!level.getBlockState(feet.above(offset)).isAir()) {
                 return false;
             }
         }
         return true;
+    }
+
+    private enum NightKind {
+        ZOMBIE(HorrorEntities.REVERSE_ZOMBIE, ReverseZombie.class, 2),
+        ENDERMAN(HorrorEntities.REVERSE_ENDERMAN, ReverseEnderman.class, 3),
+        CREEPER(HorrorEntities.REVERSE_CREEPER, ReverseCreeper.class, 2),
+        SKELETON(HorrorEntities.REVERSE_SKELETON, ReverseSkeleton.class, 2),
+        SPIDER(HorrorEntities.REVERSE_SPIDER, ReverseSpider.class, 1);
+
+        private final EntityType<?> type;
+        private final Class<? extends Entity> entityClass;
+        private final int airBlocks;
+
+        NightKind(EntityType<?> type, Class<? extends Entity> entityClass, int airBlocks) {
+            this.type = type;
+            this.entityClass = entityClass;
+            this.airBlocks = airBlocks;
+        }
+    }
+
+    private static final class NightProgress {
+        private long nightId = Long.MIN_VALUE;
+        private boolean spawnTonight;
+        private boolean spawned;
     }
 }

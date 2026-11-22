@@ -7,33 +7,27 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.saveddata.WeatherData;
 
 /**
- * One reverse monster on the surface and one underground.
- * The underground roll is the common one. A thunderstorm uses that same roll on the surface.
- * {@link ReverseZombieNights} is the only natural source, so a locked kind cannot fail a biome pick.
+ * Shared natural-spawn rules for every reverse monster, so each is equally rare.
  */
 public final class ReverseMonsterSpawns {
-    /** Kept off the hostile pack list. The timed attempt does not use this weight. */
+    /** Shared by every reverse monster. */
     public static final int WEIGHT = 3;
 
     /** Surface reverse monsters can spawn from this time through {@link #SURFACE_NIGHT_END}. */
     public static final int SURFACE_NIGHT_START = 13000;
     public static final int SURFACE_NIGHT_END = 23000;
-    /** Underground, and the surface while a thunderstorm is up. */
-    public static final int UNDERGROUND_CHANCE = 6;
-    /** Clear nights on the surface. Rarer than {@link #UNDERGROUND_CHANCE}. */
-    public static final int SURFACE_CHANCE = 18;
+    /** Twice the previous surface success rate. Same number for every reverse monster. */
+    private static final int SURFACE_CHANCE = 28;
+    /** Twice the previous underground success rate. A storm uses this number on the surface too. */
+    private static final int DEEP_CHANCE = 5;
 
     private ReverseMonsterSpawns() {
-    }
-
-    public enum Band {
-        SURFACE,
-        UNDERGROUND
     }
 
     /**
@@ -67,20 +61,6 @@ public final class ReverseMonsterSpawns {
         return false;
     }
 
-    /**
-     * Clear surface nights use the rarer roll. A storm uses the underground roll in both bands.
-     */
-    public static int appearanceChance(boolean surface, boolean storm) {
-        if (surface && !storm) {
-            return SURFACE_CHANCE;
-        }
-        return UNDERGROUND_CHANCE;
-    }
-
-    /**
-     * Eggs, commands, and events skip the timed attempt. Biome and chunk rolls do not place one,
-     * or a locked kind would fail that pick and the timed attempt would stack on top.
-     */
     public static boolean allow(
             ServerLevelAccessor level,
             EntitySpawnReason reason,
@@ -88,7 +68,33 @@ public final class ReverseMonsterSpawns {
             RandomSource random,
             EntityType<?> type
     ) {
-        return reason != EntitySpawnReason.NATURAL && reason != EntitySpawnReason.CHUNK_GENERATION;
+        if (reason != EntitySpawnReason.NATURAL && reason != EntitySpawnReason.CHUNK_GENERATION) {
+            return true;
+        }
+        if (!firstNightStarted(level.getLevel()) || ReverseSpawnCooldown.isBlocked(level)) {
+            return false;
+        }
+        if (!ReverseRoster.canSpawn(level, type)) {
+            return false;
+        }
+        if (level.getBrightness(LightLayer.BLOCK, pos) > 0) {
+            return false;
+        }
+        Level world = level.getLevel();
+        if (onSurface(world, pos)) {
+            if (occupied(level, true)) {
+                return false;
+            }
+            int chance = storming(level) ? DEEP_CHANCE : SURFACE_CHANCE;
+            return surfaceNight(world) && random.nextInt(chance) == 0;
+        }
+        if (belowSurface(world, pos)) {
+            if (occupied(level, false)) {
+                return false;
+            }
+            return random.nextInt(DEEP_CHANCE) == 0;
+        }
+        return false;
     }
 
     /**
@@ -99,26 +105,26 @@ public final class ReverseMonsterSpawns {
     }
 
     /**
-     * The underground slot already has its one reverse monster.
+     * Standing on the ground, including under trees. Anywhere lower and unlit is the dark slot.
      */
-    public static boolean darkOccupied(ServerLevel level) {
-        return occupied(level, false);
+    private static boolean onSurface(Level level, BlockPos pos) {
+        return near(level, pos, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES)
+                || near(level, pos, Heightmap.Types.WORLD_SURFACE);
     }
 
-    /**
-     * At or above the ground is the surface slot, including while off the ground.
-     * Below the ground is the underground slot.
-     */
-    public static Band band(Level level, BlockPos pos) {
+    private static boolean near(Level level, BlockPos pos, Heightmap.Types heightmap) {
+        int surface = level.getHeight(heightmap, pos.getX(), pos.getZ());
+        return pos.getY() >= surface - 1 && pos.getY() <= surface + 1;
+    }
+
+    /** Any unlit spot under the ground, not only the deepslate band. */
+    private static boolean belowSurface(Level level, BlockPos pos) {
         int surface = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ());
-        if (pos.getY() >= surface - 1) {
-            return Band.SURFACE;
-        }
-        return Band.UNDERGROUND;
+        return pos.getY() < surface - 1;
     }
 
     /**
-     * @param surfaceSlot true for the single surface monster, false for the single underground one
+     * @param surfaceSlot true for the single surface monster, false for the single dark one below ground
      */
     private static boolean occupied(ServerLevelAccessor level, boolean surfaceSlot) {
         if (!(level.getLevel() instanceof ServerLevel server)) {
@@ -128,11 +134,12 @@ public final class ReverseMonsterSpawns {
             if (!entity.isAlive() || !HorrorEntities.isReverse(entity)) {
                 continue;
             }
-            Band band = band(server, entity.blockPosition());
-            if (band == Band.SURFACE && surfaceSlot) {
-                return true;
-            }
-            if (band == Band.UNDERGROUND && !surfaceSlot) {
+            BlockPos pos = entity.blockPosition();
+            if (onSurface(server, pos)) {
+                if (surfaceSlot) {
+                    return true;
+                }
+            } else if (!surfaceSlot && server.getBrightness(LightLayer.BLOCK, pos) == 0) {
                 return true;
             }
         }
