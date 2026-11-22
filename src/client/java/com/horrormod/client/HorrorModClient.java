@@ -4,6 +4,7 @@ import com.horrormod.HorrorMod;
 import com.horrormod.client.entity.ClientFalsePlayer;
 import com.horrormod.client.entity.ClientNullClone;
 import com.horrormod.client.event.HorrorClientEffects;
+import com.horrormod.client.event.ImpurityFlicker;
 import com.horrormod.client.event.SpiderSnap;
 import com.horrormod.client.event.WhiteFlash;
 import com.horrormod.client.particle.BlackSmokeParticle;
@@ -15,6 +16,7 @@ import com.horrormod.client.event.VeilRitual;
 import com.horrormod.client.render.EmptyEntityRenderer;
 import com.horrormod.client.render.FalsePlayerRenderers;
 import com.horrormod.client.render.NullCloneRenderers;
+import com.horrormod.client.render.ImpurityItemPipeline;
 import com.horrormod.client.render.VeilItemPipeline;
 import com.horrormod.client.render.VeilLecternRender;
 import com.horrormod.client.render.ReverseEndermanRenderer;
@@ -30,12 +32,15 @@ import com.horrormod.client.render.ReverseSkeletonRenderer;
 import com.horrormod.client.render.ReverseZombieRenderer;
 import com.horrormod.client.render.WatdatmeanModel;
 import com.horrormod.client.render.WatdatmeanRenderer;
+import com.horrormod.client.screen.ImpuritySheetScreen;
 import com.horrormod.client.screen.RecipeScreen;
 import com.horrormod.client.render.ReverseSpiderRenderer;
 import com.horrormod.client.sound.HorrorAmbience;
 import com.horrormod.client.sound.ReverseSpiderAudio;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import com.horrormod.entity.HorrorEntities;
+import com.horrormod.network.ImpuritySignalPayload;
+import com.horrormod.network.OpenImpuritySheetPayload;
 import com.horrormod.network.OpenRecipePayload;
 import com.horrormod.network.SpiderSnapPayload;
 import com.horrormod.network.WhiteFlashPayload;
@@ -61,6 +66,7 @@ public final class HorrorModClient implements ClientModInitializer {
         );
         VeilItemPipeline.initialize();
         ReverseMarkerRenderType.initialize();
+        ImpurityItemPipeline.initialize();
         VeilLecternRender.initialize();
         EntityRendererRegistry.register(HorrorEntities.REVERSE_ZOMBIE, ReverseZombieRenderer::new);
         EntityRendererRegistry.register(HorrorEntities.REVERSE_ENDERMAN, ReverseEndermanRenderer::new);
@@ -79,12 +85,19 @@ public final class HorrorModClient implements ClientModInitializer {
             ReverseSpiderAudio.tick();
             SpiderSnap.tick(minecraft);
             WhiteFlash.tick();
+            ImpurityFlicker.tick(minecraft);
         });
         EntityRendererRegistry.register(HorrorEntities.GLITCH_SQUARE, GlitchSquareRenderer::new);
         EntityRendererRegistry.register(HorrorEntities.REVERSE_MARKER, ReverseMarkerRenderer::new);
         EntityRendererRegistry.register(HorrorEntities.WATDATMEAN, WatdatmeanRenderer::new);
         ClientPlayNetworking.registerGlobalReceiver(OpenRecipePayload.TYPE, (payload, context) ->
                 context.client().execute(() -> context.client().setScreenAndShow(new RecipeScreen()))
+        );
+        ClientPlayNetworking.registerGlobalReceiver(OpenImpuritySheetPayload.TYPE, (payload, context) ->
+                context.client().execute(() -> context.client().setScreenAndShow(new ImpuritySheetScreen()))
+        );
+        ClientPlayNetworking.registerGlobalReceiver(ImpuritySignalPayload.TYPE, (payload, context) ->
+                context.client().execute(() -> ImpurityFlicker.receive(payload))
         );
         HorrorMod.LOGGER.info(
                 "Horror Mod client loaded. Post chain {} is present and not applied.",

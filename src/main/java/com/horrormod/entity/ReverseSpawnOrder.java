@@ -38,6 +38,9 @@ public final class ReverseSpawnOrder {
         boolean open = itemLockLifted(level);
         List<Kind> eligible = new ArrayList<>();
         for (Kind kind : Kind.values()) {
+            if (!ReverseRoster.canSpawn(level, kind.type)) {
+                continue;
+            }
             if (!open && carrying(level, kind.drop)) {
                 continue;
             }

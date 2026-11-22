@@ -237,6 +237,11 @@
       }
     ]
   },
+  "impurity_static": {
+    "sounds": [
+      "horror_mod:impurity_static"
+    ]
+  },
   "veil_scream": {
     "sounds": [
       {

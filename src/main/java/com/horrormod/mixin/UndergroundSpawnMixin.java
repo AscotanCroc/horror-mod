@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.StructureManager;
@@ -31,8 +30,7 @@ public class UndergroundSpawnMixin {
             double distance,
             CallbackInfoReturnable<Boolean> callback
     ) {
-        EntityType<?> type = data.type();
-        if (type == HorrorEntities.REVERSE_ZOMBIE || type == HorrorEntities.REVERSE_ENDERMAN || type == HorrorEntities.REVERSE_CREEPER) {
+        if (HorrorEntities.isReverseType(data.type())) {
             return;
         }
         int surface = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ());

@@ -149,6 +149,7 @@ public final class ReverseZombieNights {
         if (type.spawn(level, feet, EntitySpawnReason.EVENT) == null) {
             return false;
         }
+        ReverseRoster.noteSpawn(level, type);
         HorrorMod.LOGGER.info("Spawned {} at {}", type, feet.toShortString());
         return true;
     }

@@ -70,6 +70,7 @@ public final class HorrorClientEffects {
             graphics.fill(0, 0, minecraft.getWindow().getGuiScaledWidth(), minecraft.getWindow().getGuiScaledHeight(), 0xFF000000);
             return;
         }
+        ImpurityFlicker.render(graphics);
         if (!active(minecraft)) {
             return;
         }

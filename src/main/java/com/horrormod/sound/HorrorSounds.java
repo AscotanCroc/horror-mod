@@ -12,6 +12,7 @@ public final class HorrorSounds {
     public static final SoundEvent WHISPER = register("whisper");
     public static final SoundEvent VEIL = register("veil");
     public static final SoundEvent VEIL_SCREAM = register("veil_scream");
+    public static final SoundEvent IMPURITY_STATIC = register("impurity_static");
 
     private HorrorSounds() {
     }
@@ -25,6 +26,7 @@ public final class HorrorSounds {
                 WHISPER.location(),
                 VEIL.location()
         );
+        HorrorMod.LOGGER.info("Registered impurity static {}", IMPURITY_STATIC.location());
     }
 
     private static SoundEvent register(String path) {
