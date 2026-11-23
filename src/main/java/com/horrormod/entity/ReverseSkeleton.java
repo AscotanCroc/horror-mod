@@ -115,6 +115,12 @@ public class ReverseSkeleton extends Skeleton {
     }
 
     @Override
+    public void die(DamageSource source) {
+        ReverseRewards.queue(this, source);
+        super.die(source);
+    }
+
+    @Override
     protected SoundEvent getAmbientSound() {
         return ReverseSkeletonSounds.AMBIENT;
     }

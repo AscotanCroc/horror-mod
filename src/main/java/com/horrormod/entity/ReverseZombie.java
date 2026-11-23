@@ -1,6 +1,5 @@
 package com.horrormod.entity;
 
-import com.horrormod.content.HorrorBlocks;
 import com.horrormod.sound.ReverseZombieSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -12,6 +11,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.player.Player;
@@ -38,14 +38,31 @@ public class ReverseZombie extends Zombie {
 
     @Override
     public void die(DamageSource source) {
-        boolean sunlight = diedInSunlight(source);
-        super.die(source);
-        if (sunlight || !(this.level() instanceof ServerLevel server)) {
-            return;
+        if (!diedInSunlight(source)) {
+            ReverseRewards.queue(this, source);
         }
-        BlockPos pos = this.blockPosition();
-        if (server.getBlockState(pos).isAir() || server.getBlockState(pos).canBeReplaced()) {
-            server.setBlock(pos, HorrorBlocks.ROT.defaultBlockState(), 3);
+        super.die(source);
+        if (this.level() instanceof ServerLevel server) {
+            spawnSilverfish(server);
+        }
+    }
+
+    private void spawnSilverfish(ServerLevel server) {
+        for (int index = 0; index < 3; index++) {
+            var fish = EntityTypes.SILVERFISH.create(server, EntitySpawnReason.MOB_SUMMONED);
+            if (fish == null) {
+                return;
+            }
+            double angle = (Math.PI * 2.0 * index) / 3.0;
+            fish.snapTo(
+                    this.getX() + Math.cos(angle) * 0.4,
+                    this.getY(),
+                    this.getZ() + Math.sin(angle) * 0.4,
+                    this.getRandom().nextFloat() * 360.0F,
+                    0.0F
+            );
+            fish.finalizeSpawn(server, server.getCurrentDifficultyAt(fish.blockPosition()), EntitySpawnReason.MOB_SUMMONED, null);
+            server.addFreshEntity(fish);
         }
     }
 

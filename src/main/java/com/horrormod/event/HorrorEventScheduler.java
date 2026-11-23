@@ -200,6 +200,9 @@ public final class HorrorEventScheduler {
         ServerLevel overworld = player.level().getServer().overworld();
         PlayerMemory memory = HorrorMemory.get(overworld).player(player.getUUID());
         memory.setInventoryVisible(visible);
+        if (!visible) {
+            HorrorEventActions.deliverRewards(player);
+        }
         if (player.level() == overworld) {
             HorrorEventActions.syncEffect(player, memory);
         }

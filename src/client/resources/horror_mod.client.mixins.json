@@ -31,7 +31,9 @@
     "ReverseSpiderCutMixin",
     "ReverseEndermanEyesMixin",
     "ReverseEndermanCensorMixin",
-    "NullCloneRendererMixin"
+    "NullCloneRendererMixin",
+    "FalsePlayerFadeMixin",
+    "GlitchClientDropMixin"
   ],
   "injectors": {
     "defaultRequire": 1

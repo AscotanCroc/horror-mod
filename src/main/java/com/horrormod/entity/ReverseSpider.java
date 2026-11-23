@@ -4,6 +4,7 @@ import com.horrormod.content.BlackCobwebBlock;
 import com.horrormod.content.HorrorBlocks;
 import com.horrormod.network.SpiderSnapPayload;
 import com.horrormod.sound.ReverseSpiderSounds;
+import com.horrormod.sound.StepVolume;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -74,7 +75,7 @@ public class ReverseSpider extends Spider {
         float fast = Math.min(2.0F, pitch * 2.0F);
         burst(sound, 4 + this.getRandom().nextInt(3), loud, fast);
         this.echo = sound;
-        this.echoVolume = loud;
+        this.echoVolume = StepVolume.fromStep() ? loud * StepVolume.SCALE : loud;
         this.echoPitch = fast;
         this.echoTicks = 2 + this.getRandom().nextInt(3);
     }
@@ -91,6 +92,7 @@ public class ReverseSpider extends Spider {
             return;
         }
         this.burst = true;
+        ReverseRewards.queue(this, source);
         if (this.level() instanceof ServerLevel level) {
             spread(level);
             int copies = 2 + level.getRandom().nextInt(2);

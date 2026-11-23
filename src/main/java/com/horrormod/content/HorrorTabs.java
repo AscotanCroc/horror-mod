@@ -35,14 +35,13 @@ public final class HorrorTabs {
                         output.accept(HorrorEntities.REVERSE_SPIDER_SPAWN_EGG);
                         output.accept(HorrorEntities.EYE);
                         output.accept(HorrorBlocks.BLACK_COBWEB);
-                        output.accept(HorrorBlocks.VEIN);
-                        output.accept(HorrorBlocks.ROT);
                         output.accept(HorrorEntities.SAVIOR);
                         output.accept(HorrorEntities.FIVE);
                         output.accept(HorrorEntities.VEIL);
                         output.accept(HorrorEntities.IMPURITY_DETECTOR);
                         output.accept(HorrorEntities.IMPURITY_SHEET);
                         output.accept(HorrorEntities.NULL_POINTER);
+                        output.accept(HorrorEntities.REVERSE_TRACKER);
                         output.accept(HorrorEntities.WATDATMEAN_SPAWN_EGG);
                     })
                     .build()

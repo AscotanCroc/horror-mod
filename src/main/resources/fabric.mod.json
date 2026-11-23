@@ -15,6 +15,7 @@
       "com.horrormod.client.HorrorModClient"
     ]
   },
+  "accessWidener": "horror_mod.accesswidener",
   "mixins": [
     "horror_mod.mixins.json",
     {

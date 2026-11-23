@@ -2,12 +2,16 @@ package com.horrormod.event;
 
 import com.horrormod.HorrorMod;
 import com.horrormod.content.HorrorBlocks;
+import com.horrormod.entity.FalsePlayer;
 import com.horrormod.entity.HorrorEntities;
+import com.horrormod.entity.ReverseSpawnOrder;
+import com.horrormod.entity.TallCensor;
 import com.horrormod.entity.Watdatmean;
 import com.horrormod.event.HorrorMemory.PlacedBlock;
 import com.horrormod.event.HorrorMemory.PlayerMemory;
 import com.horrormod.network.HorrorEffectPayload;
 import com.horrormod.sound.HorrorSounds;
+import com.horrormod.sound.StepVolume;
 import com.horrormod.world.VoidChunks;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -35,15 +39,14 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityReference;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.animal.wolf.WolfSoundVariants;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -127,6 +130,8 @@ public final class HorrorEventActions {
             case CAVE_BREATH -> caveBreath(level, player);
             case CHEST_LID -> chestLid(level, player);
             case WRONG_STEP -> wrongStep(player);
+            case TALL_CENSOR -> TallCensor.appear(level, player);
+            case FALSE_PLAYER -> FalsePlayer.appear(level, player);
         };
     }
 
@@ -165,7 +170,28 @@ public final class HorrorEventActions {
         if (player.getLookAngle().dot(delta.scale(1.0 / distance)) < Math.cos(Math.toRadians(50.0))) {
             return false;
         }
-        BlockHitResult hit = player.level().clip(new ClipContext(eye, target, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+        return clearLine(player, target);
+    }
+
+    /** How far the look direction agrees with the direction to {@code target}. 1 is straight at it. */
+    public static double lookDot(ServerPlayer player, Vec3 target) {
+        Vec3 delta = target.subtract(player.getEyePosition());
+        double distance = delta.length();
+        if (distance < 1.0E-4) {
+            return 1.0;
+        }
+        return player.getLookAngle().dot(delta.scale(1.0 / distance));
+    }
+
+    /** True when a block does not stand between the player's eyes and {@code target}. */
+    public static boolean clearLine(ServerPlayer player, Vec3 target) {
+        BlockHitResult hit = player.level().clip(new ClipContext(
+                player.getEyePosition(),
+                target,
+                ClipContext.Block.COLLIDER,
+                ClipContext.Fluid.NONE,
+                player
+        ));
         return hit.getType() == HitResult.Type.MISS || hit.getLocation().distanceToSqr(target) <= 2.25;
     }
 
@@ -344,14 +370,15 @@ public final class HorrorEventActions {
     }
 
     private static boolean reverseBehind(ServerLevel level, ServerPlayer player) {
-        List<EntityType<? extends Mob>> types = HorrorEntities.reverseMonsters();
-        EntityType<? extends Mob> type = types.get(level.getRandom().nextInt(types.size()));
-        int air = type == HorrorEntities.REVERSE_ENDERMAN ? 3 : 2;
-        BlockPos feet = findBehind(level, player, air);
+        ReverseSpawnOrder.Kind kind = ReverseSpawnOrder.pick(level, level.getRandom());
+        if (kind == null) {
+            return false;
+        }
+        BlockPos feet = findBehind(level, player, kind.airBlocks());
         if (feet == null) {
             return false;
         }
-        return type.spawn(level, feet, EntitySpawnReason.EVENT) != null;
+        return kind.type().spawn(level, feet, EntitySpawnReason.EVENT) != null;
     }
 
     private static boolean shuffle(ServerPlayer player, PlayerMemory memory) {
@@ -772,6 +799,79 @@ public final class HorrorEventActions {
         return hit.getType() == HitResult.Type.MISS || hit.getLocation().distanceToSqr(target) <= 2.25;
     }
 
+    /**
+     * Puts queued reverse-kill rewards into random main-inventory slots. No pickup sound.
+     * A full inventory drops the stack that the reward replaces.
+     */
+    public static void deliverRewards(ServerPlayer player) {
+        if (!(player.level() instanceof ServerLevel level)) {
+            return;
+        }
+        HorrorMemory saved = HorrorMemory.get(level.getServer().overworld());
+        if (!saved.hasRewards(player.getUUID())) {
+            return;
+        }
+        Inventory inventory = player.getInventory();
+        int size = inventory.getNonEquipmentItems().size();
+        if (size <= 0) {
+            return;
+        }
+        List<String> ids = saved.drainRewards(player.getUUID());
+        RandomSource random = player.getRandom();
+        boolean changed = false;
+        for (String id : ids) {
+            Item item = rewardItem(id);
+            if (item == null) {
+                continue;
+            }
+            placeReward(player, level, inventory, size, random, new ItemStack(item));
+            changed = true;
+        }
+        if (changed) {
+            syncInventory(player);
+        }
+    }
+
+    private static Item rewardItem(String id) {
+        Identifier parsed = Identifier.tryParse(id);
+        if (parsed == null) {
+            return null;
+        }
+        return BuiltInRegistries.ITEM.getOptional(parsed).orElse(null);
+    }
+
+    private static void placeReward(
+            ServerPlayer player,
+            ServerLevel level,
+            Inventory inventory,
+            int size,
+            RandomSource random,
+            ItemStack reward
+    ) {
+        List<Integer> empty = new ArrayList<>();
+        List<Integer> filled = new ArrayList<>();
+        for (int slot = 0; slot < size; slot++) {
+            if (inventory.getItem(slot).isEmpty()) {
+                empty.add(slot);
+            } else {
+                filled.add(slot);
+            }
+        }
+        if (!empty.isEmpty()) {
+            inventory.setItem(empty.get(random.nextInt(empty.size())), reward);
+            return;
+        }
+        if (filled.isEmpty()) {
+            return;
+        }
+        int slot = filled.get(random.nextInt(filled.size()));
+        ItemStack replaced = inventory.getItem(slot);
+        inventory.setItem(slot, reward);
+        if (!replaced.isEmpty()) {
+            player.spawnAtLocation(level, replaced);
+        }
+    }
+
     private static void syncInventory(ServerPlayer player) {
         player.getInventory().setChanged();
         player.inventoryMenu.broadcastFullState();
@@ -883,7 +983,7 @@ public final class HorrorEventActions {
                     y,
                     z,
                     type.getStepSound(),
-                    Math.max(0.35F, type.getVolume() * 0.7F),
+                    Math.max(0.35F, type.getVolume() * 0.7F) * StepVolume.SCALE,
                     type.getPitch() * (0.85F + random.nextFloat() * 0.3F)
             );
         }

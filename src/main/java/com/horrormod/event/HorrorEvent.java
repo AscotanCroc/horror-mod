@@ -33,7 +33,9 @@ public enum HorrorEvent {
     GHOST_MINE("ghost_mine"),
     CAVE_BREATH("cave_breath"),
     CHEST_LID("chest_lid"),
-    WRONG_STEP("wrong_step");
+    WRONG_STEP("wrong_step"),
+    TALL_CENSOR("tall_censor"),
+    FALSE_PLAYER("false_player");
 
     private final String id;
 

@@ -31,6 +31,7 @@ public class ReverseCreeper extends Creeper {
     /** Vanilla creepers move at 0.25. */
     private static final double MOVEMENT_SPEED = 0.14;
     private boolean burst;
+    private boolean rewarded;
     private BlockPos lastLight;
 
     public ReverseCreeper(EntityType<? extends Creeper> type, Level level) {
@@ -95,6 +96,20 @@ public class ReverseCreeper extends Creeper {
         return ReverseCreeperSounds.DEATH;
     }
 
+    @Override
+    public void die(DamageSource source) {
+        this.pay(source);
+        super.die(source);
+    }
+
+    private void pay(DamageSource source) {
+        if (this.rewarded) {
+            return;
+        }
+        this.rewarded = true;
+        ReverseRewards.queue(this, source);
+    }
+
     /**
      * Replaces the vanilla crater. Called from the creeper explosion mixin once the fuse finishes.
      */
@@ -111,6 +126,7 @@ public class ReverseCreeper extends Creeper {
             source = this.damageSources().generic();
         }
         LivingEntity credit = this.getKillCredit();
+        this.pay(source);
         this.dropFromLootTable(level, source, credit != null);
         ReverseCreeperBurst.clearItemsSoon(level, new Vec3(this.getX(), this.getY(), this.getZ()));
         this.discard();

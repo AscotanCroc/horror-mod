@@ -1,14 +1,4 @@
 {
   "type": "minecraft:entity",
-  "pools": [
-    {
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "horror_mod:null_pointer"
-        }
-      ],
-      "rolls": 1
-    }
-  ]
+  "pools": []
 }

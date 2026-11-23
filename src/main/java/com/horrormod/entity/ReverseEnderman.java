@@ -1,6 +1,5 @@
 package com.horrormod.entity;
 
-import com.horrormod.content.VeinBlock;
 import com.horrormod.event.HorrorEventActions;
 import com.horrormod.sound.ReverseEndermanSounds;
 import net.minecraft.server.level.ServerLevel;
@@ -22,6 +21,8 @@ import net.minecraft.world.level.ServerLevelAccessor;
  * An enderman whose own sounds are the vanilla ones played backwards.
  */
 public class ReverseEnderman extends Enderman {
+    private boolean vanished;
+
     public ReverseEnderman(EntityType<? extends Enderman> type, Level level) {
         super(type, level);
     }
@@ -82,15 +83,44 @@ public class ReverseEnderman extends Enderman {
 
     @Override
     public void die(DamageSource source) {
-        if (this.level() instanceof ServerLevel server) {
-            VeinBlock.scar(server, this.blockPosition());
+        if (this.vanished || this.isRemoved()) {
+            return;
         }
-        super.die(source);
+        this.vanished = true;
+        if (this.level() instanceof ServerLevel server) {
+            HorrorEventActions.flickerIfSeen(server, this);
+            ReverseRewards.queue(this, source);
+        }
+        this.discard();
     }
 
     @Override
     public void playSound(SoundEvent sound, float volume, float pitch) {
         super.playSound(sound, volume * 2.8F, Math.min(2.3F, pitch * 1.65F));
+    }
+
+    @Override
+    public void makeSound(SoundEvent sound) {
+        if (this.isDeadOrDying() || this.vanished) {
+            return;
+        }
+        super.makeSound(sound);
+    }
+
+    @Override
+    public void handleDamageEvent(DamageSource source) {
+        if (this.isDeadOrDying() || this.getHealth() <= 0.0F || this.vanished) {
+            return;
+        }
+        super.handleDamageEvent(source);
+    }
+
+    @Override
+    public void handleEntityEvent(byte id) {
+        if (id == 3) {
+            return;
+        }
+        super.handleEntityEvent(id);
     }
 
     @Override

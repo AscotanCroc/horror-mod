@@ -1,6 +1,7 @@
 package com.horrormod.client;
 
 import com.horrormod.HorrorMod;
+import com.horrormod.client.entity.ClientFalsePlayer;
 import com.horrormod.client.entity.ClientNullClone;
 import com.horrormod.client.event.HorrorClientEffects;
 import com.horrormod.client.event.ImpurityFlicker;
@@ -12,14 +13,19 @@ import com.horrormod.client.particle.GlitchSquareParticle;
 import com.horrormod.entity.HorrorParticles;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry;
 import com.horrormod.client.event.VeilRitual;
+import com.horrormod.client.render.EmptyEntityRenderer;
+import com.horrormod.client.render.FalsePlayerRenderers;
 import com.horrormod.client.render.NullCloneRenderers;
 import com.horrormod.client.render.ImpurityItemPipeline;
 import com.horrormod.client.render.VeilItemPipeline;
 import com.horrormod.client.render.VeilLecternRender;
 import com.horrormod.client.render.ReverseEndermanRenderer;
+import com.horrormod.entity.FalsePlayer;
 import com.horrormod.entity.NullClone;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import com.horrormod.client.render.GlitchSquareRenderer;
+import com.horrormod.client.render.ReverseMarkerRenderType;
+import com.horrormod.client.render.ReverseMarkerRenderer;
 import com.horrormod.client.render.ReverseCreeperRenderer;
 import com.horrormod.client.render.ReverseSkeletonModel;
 import com.horrormod.client.render.ReverseSkeletonRenderer;
@@ -59,6 +65,7 @@ public final class HorrorModClient implements ClientModInitializer {
                 context.client().execute(WhiteFlash::begin)
         );
         VeilItemPipeline.initialize();
+        ReverseMarkerRenderType.initialize();
         ImpurityItemPipeline.initialize();
         VeilLecternRender.initialize();
         EntityRendererRegistry.register(HorrorEntities.REVERSE_ZOMBIE, ReverseZombieRenderer::new);
@@ -66,6 +73,9 @@ public final class HorrorModClient implements ClientModInitializer {
         EntityRendererRegistry.register(HorrorEntities.REVERSE_CREEPER, ReverseCreeperRenderer::new);
         NullClone.clientFactory = ClientNullClone::new;
         EntityRendererRegistry.register(HorrorEntities.NULL_CLONE, NullCloneRenderers::create);
+        FalsePlayer.clientFactory = ClientFalsePlayer::new;
+        EntityRendererRegistry.register(HorrorEntities.FALSE_PLAYER, FalsePlayerRenderers::create);
+        EntityRendererRegistry.register(HorrorEntities.TALL_CENSOR, EmptyEntityRenderer::new);
         EntityRendererRegistry.register(HorrorEntities.THROWN_NULL_POINTER, ThrownItemRenderer::new);
         ModelLayerRegistry.registerModelLayer(WatdatmeanModel.LAYER_LOCATION, WatdatmeanModel::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(ReverseSkeletonModel.LAYER_LOCATION, ReverseSkeletonModel::createBodyLayer);
@@ -78,6 +88,7 @@ public final class HorrorModClient implements ClientModInitializer {
             ImpurityFlicker.tick(minecraft);
         });
         EntityRendererRegistry.register(HorrorEntities.GLITCH_SQUARE, GlitchSquareRenderer::new);
+        EntityRendererRegistry.register(HorrorEntities.REVERSE_MARKER, ReverseMarkerRenderer::new);
         EntityRendererRegistry.register(HorrorEntities.WATDATMEAN, WatdatmeanRenderer::new);
         ClientPlayNetworking.registerGlobalReceiver(OpenRecipePayload.TYPE, (payload, context) ->
                 context.client().execute(() -> context.client().setScreenAndShow(new RecipeScreen()))

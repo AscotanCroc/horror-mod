@@ -25,7 +25,8 @@ public final class HorrorMemory extends SavedData {
     private static final int PLACED_CAP = 128;
 
     public static final Codec<HorrorMemory> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.unboundedMap(UUIDUtil.STRING_CODEC, PlayerMemory.CODEC).fieldOf("players").forGetter(HorrorMemory::players)
+            Codec.unboundedMap(UUIDUtil.STRING_CODEC, PlayerMemory.CODEC).fieldOf("players").forGetter(HorrorMemory::players),
+            Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.STRING.listOf()).optionalFieldOf("rewards", Map.of()).forGetter(HorrorMemory::rewardLists)
     ).apply(instance, HorrorMemory::new));
 
     public static final SavedDataType<HorrorMemory> TYPE = new SavedDataType<>(
@@ -36,12 +37,14 @@ public final class HorrorMemory extends SavedData {
     );
 
     private final Map<UUID, PlayerMemory> players = new HashMap<>();
+    private final Map<UUID, List<String>> rewards = new HashMap<>();
 
     public HorrorMemory() {
     }
 
-    private HorrorMemory(Map<UUID, PlayerMemory> players) {
+    private HorrorMemory(Map<UUID, PlayerMemory> players, Map<UUID, List<String>> rewards) {
         this.players.putAll(players);
+        rewards.forEach((id, items) -> this.rewards.put(id, new ArrayList<>(items)));
     }
 
     public static HorrorMemory get(ServerLevel level) {
@@ -59,6 +62,31 @@ public final class HorrorMemory extends SavedData {
             memory.attach(this);
         }
         return this.players;
+    }
+
+    public void queueReward(UUID player, String itemId) {
+        this.rewards.computeIfAbsent(player, key -> new ArrayList<>()).add(itemId);
+        this.setDirty();
+    }
+
+    public boolean hasRewards(UUID player) {
+        List<String> items = this.rewards.get(player);
+        return items != null && !items.isEmpty();
+    }
+
+    public List<String> drainRewards(UUID player) {
+        List<String> items = this.rewards.remove(player);
+        if (items == null || items.isEmpty()) {
+            return List.of();
+        }
+        this.setDirty();
+        return List.copyOf(items);
+    }
+
+    private Map<UUID, List<String>> rewardLists() {
+        Map<UUID, List<String>> copy = new HashMap<>();
+        this.rewards.forEach((id, items) -> copy.put(id, List.copyOf(items)));
+        return copy;
     }
 
     /**

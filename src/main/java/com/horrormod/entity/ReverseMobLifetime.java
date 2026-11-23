@@ -23,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class ReverseMobLifetime {
     private static final long UNSEEN_TICKS = 20L * 60L * 2L;
+    private static ReverseMobLifetime active;
     private final Map<UUID, Long> appeared = new HashMap<>();
     private final Set<UUID> met = new HashSet<>();
 
@@ -30,8 +31,8 @@ public final class ReverseMobLifetime {
     }
 
     public static void initialize() {
-        ReverseMobLifetime lifetime = new ReverseMobLifetime();
-        ServerTickEvents.END_LEVEL_TICK.register(lifetime::tick);
+        active = new ReverseMobLifetime();
+        ServerTickEvents.END_LEVEL_TICK.register(active::tick);
     }
 
     private void tick(ServerLevel level) {

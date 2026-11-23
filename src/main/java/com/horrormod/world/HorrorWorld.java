@@ -41,7 +41,7 @@ public final class HorrorWorld {
     private static void warmGeneration(MinecraftServer server) {
         ServerLevel overworld = server.overworld();
         ChunkPos spawn = SpawnPlains.spawnChunk(overworld);
-        ObeliskPlacement.chunk(overworld.getSeed(), spawn);
+        ObeliskPlacement.chunk(overworld, spawn);
     }
 
     private static void holdDawn(MinecraftServer server) {

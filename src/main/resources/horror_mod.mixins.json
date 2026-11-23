@@ -43,6 +43,12 @@
     "VoidTerrainMixin",
     "VoidDecorationMixin",
     "WrongStepMixin",
+    "StepVolumeMixin",
+    "GlitchDropMixin",
+    "GlitchItemMixin",
+    "GlitchPlayerDropMixin",
+    "GlitchMenuDropMixin",
+    "GlitchDeathMixin",
     "ZombiePackMixin"
   ],
   "injectors": {

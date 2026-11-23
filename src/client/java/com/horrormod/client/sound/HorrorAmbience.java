@@ -18,6 +18,10 @@ public final class HorrorAmbience {
     private static final int NIGHT_START = 13000;
     private static final int DAY_START = 1000;
     private static final int FADE_TICKS = 3600;
+    /** Quiet enough that footsteps stay audible over the day and veil beds. */
+    private static final float MUSIC = 0.28F;
+    /** A step above the day bed, still under the footsteps. */
+    private static final float NIGHT_MUSIC = 0.38F;
 
     private static AmbienceLoop day;
     private static AmbienceLoop night;
@@ -107,7 +111,7 @@ public final class HorrorAmbience {
             this.nightTrack = sound == HorrorSounds.NIGHT;
             this.veilTrack = sound == HorrorSounds.VEIL;
             this.looping = true;
-            this.volume = 1.0F;
+            this.volume = this.nightTrack ? 0.0F : MUSIC;
             this.pitch = 1.0F;
             this.attenuation = SoundInstance.Attenuation.NONE;
             this.relative = true;
@@ -131,11 +135,12 @@ public final class HorrorAmbience {
                     this.stop();
                     return;
                 }
-                this.volume = 1.0F;
+                this.volume = MUSIC;
                 return;
             }
             float nightAmount = HorrorAmbience.nightAmount(level.getOverworldClockTime());
-            this.volume = this.nightTrack ? nightAmount : 1.0F - nightAmount;
+            float bed = this.nightTrack ? NIGHT_MUSIC : MUSIC;
+            this.volume = (this.nightTrack ? nightAmount : 1.0F - nightAmount) * bed;
         }
     }
 }
